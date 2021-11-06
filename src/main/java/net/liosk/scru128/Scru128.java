@@ -37,6 +37,9 @@ public final class Scru128 {
      * Generates a new SCRU128 ID encoded in a string.
      * <p>
      * Use this function to quickly get a new SCRU128 ID as a string. Use {@link Scru128Generator} to do more.
+     * <p>
+     * This function is thread safe in that it generates monotonically ordered IDs using a shared state when called
+     * concurrently from multiple threads.
      *
      * @return 26-digit canonical string representation.
      */

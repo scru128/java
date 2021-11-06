@@ -1,0 +1,105 @@
+package net.liosk.scru128;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import java.util.*;
+import java.util.regex.Pattern;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class Scru128Test {
+    static List<String> samples;
+
+    @BeforeAll
+    static void setup() {
+        var ss = new ArrayList<String>();
+        for (var i = 0; i < 100_000; i++) {
+            ss.add(Scru128.scru128());
+        }
+        samples = List.copyOf(ss);
+    }
+
+    @Test
+    @DisplayName("Generates 26-digit canonical string")
+    void testFormat() {
+        var pattern = Pattern.compile("^[0-7][0-9A-V]{25}$");
+        for (var e : samples) {
+            assertTrue(pattern.matcher(e).matches());
+        }
+    }
+
+    @Test
+    @DisplayName("Generates 100k identifiers without collision")
+    void testUniqueness() {
+        var set = new HashSet<>(samples);
+        assertEquals(samples.size(), set.size());
+    }
+
+    @Test
+    @DisplayName("Generates sortable string representation by creation time")
+    void testOrder() {
+        var sortedCopy = new ArrayList<>(samples);
+        Collections.sort(sortedCopy);
+        for (var i = 0; i < samples.size(); i++) {
+            assertEquals(samples.get(i), sortedCopy.get(i));
+        }
+    }
+
+    @Test
+    @DisplayName("Encodes up-to-date timestamp")
+    void testTimestamp() {
+        var epoch = 1577836800_000L;
+        for (var i = 0; i < 10_000; i++) {
+            var tsNow = System.currentTimeMillis() - epoch;
+            var timestamp = Scru128Id.fromString(Scru128.scru128()).getTimestamp();
+            assertTrue(Math.abs(tsNow - timestamp) < 16);
+        }
+    }
+
+    @Test
+    @DisplayName("Encodes unique sortable pair of timestamp and counter")
+    void testTimestampAndCounter() {
+        var prev = Scru128Id.fromString(samples.get(0));
+        for (var i = 1; i < samples.size(); i++) {
+            var curr = Scru128Id.fromString(samples.get(i));
+            assertTrue(prev.getTimestamp() < curr.getTimestamp() ||
+                    (prev.getTimestamp() == curr.getTimestamp() &&
+                            prev.getCounter() < curr.getCounter()));
+            prev = curr;
+        }
+    }
+
+    @Test
+    @DisplayName("Generates no IDs sharing same timestamp and counter under multithreading")
+    void testThreading() throws InterruptedException {
+        var queue = new LinkedList<String>();
+        var producers = new ArrayList<Thread>();
+        for (var i = 0; i < 4; i++) {
+            var thread = new Thread(() -> {
+                for (var j = 0; j < 10_000; j++) {
+                    var x = Scru128.scru128();
+                    synchronized (queue) {
+                        queue.add(x);
+                    }
+                }
+            });
+            thread.start();
+            producers.add(thread);
+        }
+
+        for (var e : producers) {
+            e.join();
+        }
+
+        var set = new HashSet<String>();
+        for (var e : queue) {
+            var x = Scru128Id.fromString(e);
+            set.add(String.format("%011x-%07x", x.getTimestamp(), x.getCounter()));
+        }
+
+        assertEquals(4 * 10_000, set.size());
+    }
+}

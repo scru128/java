@@ -26,14 +26,23 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
      * Creates an object from a 128-bit unsigned integer.
      * <p>
      * The primary constructor is concealed so the internal BigInteger implementation can be superseded in the future.
-     *
-     * @throws IllegalArgumentException if the argument is out of the range of 128-bit unsigned integer.
      */
     private Scru128Id(@NotNull BigInteger intValue) {
         value = Objects.requireNonNull(intValue);
         if (value.signum() < 0 || value.bitLength() > 128) {
             throw new IllegalArgumentException("not a 128-bit unsigned integer: " + value);
         }
+    }
+
+    /**
+     * Creates an object from a 128-bit unsigned integer.
+     *
+     * @param intValue 128-bit unsigned integer representation.
+     * @return new object.
+     * @throws IllegalArgumentException if the argument is out of the range of 128-bit unsigned integer.
+     */
+    public static @NotNull Scru128Id fromBigInteger(@NotNull BigInteger intValue) {
+        return new Scru128Id(intValue);
     }
 
     /**

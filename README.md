@@ -36,6 +36,29 @@ See [SCRU128 Specification] for details.
 [ksuid]: https://github.com/segmentio/ksuid
 [scru128 specification]: https://github.com/scru128/spec
 
+## Installation
+
+This implementation is yet to be published to an open maven repository, but
+GitHub-based builds are available at [JitPack].
+
+`build.gradle.kts` example:
+
+```kotlin
+repositories {
+    ...
+    maven { setUrl("https://jitpack.io") }
+}
+
+dependencies {
+    implementation("com.github.scru128:java:main-SNAPSHOT")
+}
+```
+
+Please refer to [JitPack] for the configurations to add this library to your
+project as a dependency using Gradle, Maven, and other.
+
+[jitpack]: https://jitpack.io/#scru128/java/main-SNAPSHOT
+
 ## License
 
 Copyright 2021 LiosK
