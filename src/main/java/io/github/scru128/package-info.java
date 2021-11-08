@@ -15,4 +15,4 @@
  *
  * @see <a href="https://github.com/scru128/spec">SCRU128 Specification</a> for details.
  */
-package net.liosk.scru128;
+package io.github.scru128;

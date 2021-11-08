@@ -1,10 +1,11 @@
 plugins {
     `java-library`
+    signing
     `maven-publish`
 }
 
-group = "net.liosk.scru128"
-version = "0.1.0"
+group = "io.github.scru128"
+version = "0.2.0"
 
 repositories {
     mavenCentral()
@@ -33,6 +34,12 @@ java {
     }
 }
 
+signing {
+    if (hasProperty("signing.keyId")) {
+        sign(publishing.publications)
+    }
+}
+
 publishing {
     publications {
         create<MavenPublication>("maven") {
@@ -57,6 +64,17 @@ publishing {
                     connection.set("scm:git:git://github.com/scru128/java.git")
                     developerConnection.set("scm:git:ssh://git@github.com/scru128/java.git")
                     url.set("https://github.com/scru128/java")
+                }
+            }
+        }
+
+        repositories {
+            maven {
+                name = "MavenCentral"
+                url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+                credentials {
+                    username = findProperty("sonatypeUsername") as String
+                    password = findProperty("sonatypePassword") as String
                 }
             }
         }

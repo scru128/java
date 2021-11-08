@@ -14,7 +14,7 @@ decentralized, globally unique time-ordered identifiers. SCRU128 is inspired by
 Kotlin examples:
 
 ```kotlin
-import net.liosk.scru128.Scru128
+import io.github.scru128.Scru128
 
 println(Scru128.scru128()) // e.g. "00R5B73KHDE4DDE3K37FIIVA8H"
 println(Scru128.scru128()) // e.g. "00R5B73KHDE4DDG3K37CD8D04L"
@@ -23,7 +23,7 @@ println(Scru128.scru128()) // e.g. "00R5B73KHDE4DDG3K37CD8D04L"
 Java examples:
 
 ```java
-import net.liosk.scru128.Scru128;
+import io.github.scru128.Scru128;
 
 System.out.println(Scru128.scru128()); // e.g. "00R5B73KHDE4DDE3K37FIIVA8H"
 System.out.println(Scru128.scru128()); // e.g. "00R5B73KHDE4DDG3K37CD8D04L"
@@ -38,26 +38,17 @@ See [SCRU128 Specification] for details.
 
 ## Installation
 
-This implementation is yet to be published to an open maven repository, but
-GitHub-based builds are available at [JitPack].
-
-`build.gradle.kts` example:
+Obtain a copy from Maven Central Repository. `build.gradle.kts` example:
 
 ```kotlin
 repositories {
-    ...
-    maven { setUrl("https://jitpack.io") }
+    mavenCentral()
 }
 
 dependencies {
-    implementation("com.github.scru128:java:main-SNAPSHOT")
+    implementation("io.github.scru128:scru128:0.2.0")
 }
 ```
-
-Please refer to [JitPack] for the configurations to add this library to your
-project as a dependency using Gradle, Maven, and other.
-
-[jitpack]: https://jitpack.io/#scru128/java/main-SNAPSHOT
 
 ## License
 

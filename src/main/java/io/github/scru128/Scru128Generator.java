@@ -1,4 +1,4 @@
-package net.liosk.scru128;
+package io.github.scru128;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -56,7 +56,7 @@ public class Scru128Generator {
             tsLastGen = tsNow;
             counter = random.nextInt() & Scru128.MAX_COUNTER;
         } else if (++counter > Scru128.MAX_COUNTER) {
-            var logger = System.getLogger("net.liosk.scru128");
+            var logger = System.getLogger("io.github.scru128");
             logger.log(System.Logger.Level.INFO, "counter limit reached; will wait until clock goes forward");
             var nClockCheck = 0;
             while (tsNow <= tsLastGen) {

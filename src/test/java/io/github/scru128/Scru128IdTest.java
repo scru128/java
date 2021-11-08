@@ -1,4 +1,4 @@
-package net.liosk.scru128;
+package io.github.scru128;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,10 +42,10 @@ class Scru128IdTest {
             var fromString = Scru128Id.fromString(e.string);
 
             assertEquals(fromFields, fromString);
-            assertEquals(e.string, fromFields.toString());
-            assertEquals(e.string, fromString.toString());
             assertEquals(new BigInteger(e.string, 32), fromFields.toBigInteger());
             assertEquals(new BigInteger(e.string, 32), fromString.toBigInteger());
+            assertEquals(e.string, fromFields.toString());
+            assertEquals(e.string, fromString.toString());
             assertEquals(e.timestamp, fromFields.getTimestamp());
             assertEquals(e.timestamp, fromString.getTimestamp());
             assertEquals(e.counter, fromFields.getCounter());
@@ -94,6 +94,7 @@ class Scru128IdTest {
 
             assertTrue(curr.equals(curr));
             assertEquals(curr.compareTo(curr), 0);
+
             prev = curr;
         }
     }

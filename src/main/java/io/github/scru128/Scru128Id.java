@@ -1,4 +1,4 @@
-package net.liosk.scru128;
+package io.github.scru128;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
