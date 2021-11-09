@@ -34,6 +34,14 @@ java {
     }
 }
 
+tasks.javadoc {
+    setDestinationDir(file("docs"))
+}
+
+tasks.clean {
+    delete("docs")
+}
+
 signing {
     if (hasProperty("signing.keyId")) {
         sign(publishing.publications)

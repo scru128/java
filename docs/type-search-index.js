@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes","url":"allclasses-index.html"},{"p":"io.github.scru128","l":"Scru128"},{"p":"io.github.scru128","l":"Scru128Generator"},{"p":"io.github.scru128","l":"Scru128Id"}]
