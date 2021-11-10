@@ -6,29 +6,26 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class Scru128Test {
-    static List<String> samples;
+    static final ArrayList<String> SAMPLES = new ArrayList<>();
 
     @BeforeAll
     static void setup() {
-        var ss = new ArrayList<String>();
         for (var i = 0; i < 100_000; i++) {
-            ss.add(Scru128.scru128());
+            SAMPLES.add(Scru128.scru128());
         }
-        samples = List.copyOf(ss);
     }
 
     @Test
     @DisplayName("Generates 26-digit canonical string")
     void testFormat() {
         var pattern = Pattern.compile("^[0-7][0-9A-V]{25}$");
-        for (var e : samples) {
+        for (var e : SAMPLES) {
             assertTrue(pattern.matcher(e).matches());
         }
     }
@@ -36,15 +33,15 @@ class Scru128Test {
     @Test
     @DisplayName("Generates 100k identifiers without collision")
     void testUniqueness() {
-        var set = new HashSet<>(samples);
-        assertEquals(samples.size(), set.size());
+        var set = new HashSet<>(SAMPLES);
+        assertEquals(SAMPLES.size(), set.size());
     }
 
     @Test
     @DisplayName("Generates sortable string representation by creation time")
     void testOrder() {
-        for (var i = 1; i < samples.size(); i++) {
-            assertTrue(samples.get(i - 1).compareTo(samples.get(i)) < 0);
+        for (var i = 1; i < SAMPLES.size(); i++) {
+            assertTrue(SAMPLES.get(i - 1).compareTo(SAMPLES.get(i)) < 0);
         }
     }
 
@@ -62,9 +59,9 @@ class Scru128Test {
     @Test
     @DisplayName("Encodes unique sortable pair of timestamp and counter")
     void testTimestampAndCounter() {
-        var prev = Scru128Id.fromString(samples.get(0));
-        for (var i = 1; i < samples.size(); i++) {
-            var curr = Scru128Id.fromString(samples.get(i));
+        var prev = Scru128Id.fromString(SAMPLES.get(0));
+        for (var i = 1; i < SAMPLES.size(); i++) {
+            var curr = Scru128Id.fromString(SAMPLES.get(i));
             assertTrue(prev.getTimestamp() < curr.getTimestamp() ||
                     (prev.getTimestamp() == curr.getTimestamp() &&
                             prev.getCounter() < curr.getCounter()));

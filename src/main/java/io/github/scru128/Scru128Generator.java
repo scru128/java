@@ -34,7 +34,23 @@ public class Scru128Generator {
      */
     private int nClockCheckMax = 1_000_000;
 
-    private @NotNull Random random = new SecureRandom();
+    private @NotNull Random random;
+
+    /**
+     * Creates a generator object with the default random number generator.
+     */
+    public Scru128Generator() {
+        this(new SecureRandom());
+    }
+
+    /**
+     * Creates a generator object with a specified random number generator.
+     *
+     * @param random random number generator (should be cryptographically strong and securely seeded).
+     */
+    public Scru128Generator(@NotNull Random random) {
+        this.random = random;
+    }
 
     /**
      * Generates a new SCRU128 ID object.

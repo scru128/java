@@ -35,6 +35,15 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
     }
 
     /**
+     * Creates an empty object.
+     * <p>
+     * This constructor is provided only for the convenience of some libraries that require parameterless constructors.
+     */
+    public Scru128Id() {
+        this(BigInteger.ZERO);
+    }
+
+    /**
      * Creates an object from a 128-bit unsigned integer.
      *
      * @param intValue 128-bit unsigned integer representation.
