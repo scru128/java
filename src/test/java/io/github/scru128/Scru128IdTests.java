@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class Scru128IdTest {
+class Scru128IdTests {
     @Test
     @DisplayName("Encodes and decodes prepared cases correctly")
     void testEncodeDecode() {
@@ -89,11 +89,17 @@ class Scru128IdTest {
         for (var curr : ordered) {
             assertFalse(curr.equals(prev));
             assertFalse(prev.equals(curr));
+            assertNotEquals(curr.hashCode(), prev.hashCode());
             assertTrue(curr.compareTo(prev) > 0);
             assertTrue(prev.compareTo(curr) < 0);
 
-            assertTrue(curr.equals(curr));
-            assertEquals(curr.compareTo(curr), 0);
+            var clone = Scru128Id.fromString(curr.toString());
+            assertFalse(curr == clone);
+            assertTrue(curr.equals(clone));
+            assertTrue(clone.equals(curr));
+            assertEquals(curr.hashCode(), clone.hashCode());
+            assertEquals(curr.compareTo(clone), 0);
+            assertEquals(clone.compareTo(curr), 0);
 
             prev = curr;
         }

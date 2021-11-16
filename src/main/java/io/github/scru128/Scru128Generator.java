@@ -32,9 +32,9 @@ public class Scru128Generator {
     /**
      * Maximum number of checking System.currentTimeMillis() until clock goes forward.
      */
-    private int nClockCheckMax = 1_000_000;
+    private final int nClockCheckMax = 1_000_000;
 
-    private @NotNull Random random;
+    private final @NotNull Random random;
 
     /**
      * Creates a generator object with the default random number generator.
@@ -54,17 +54,19 @@ public class Scru128Generator {
 
     /**
      * Generates a new SCRU128 ID object.
+     * <p>
+     * This method is thread safe; multiple threads can call it concurrently.
      *
      * @return new SCRU128 ID object.
      */
     public synchronized @NotNull Scru128Id generate() {
-        return generate_thread_unsafe();
+        return generateThreadUnsafe();
     }
 
     /**
      * Generates a new SCRU128 ID object without overhead for thread safety.
      */
-    private @NotNull Scru128Id generate_thread_unsafe() {
+    private @NotNull Scru128Id generateThreadUnsafe() {
         var tsNow = System.currentTimeMillis();
 
         // update timestamp and counter

@@ -24,11 +24,6 @@ public final class Scru128 {
      */
     static final int MAX_PER_SEC_RANDOM = 0xFF_FFFF;
 
-    /**
-     * Maximum value of 32-bit per_sec_random field.
-     */
-    static final long MAX_PER_GEN_RANDOM = 0xFFFF_FFFFL;
-
     private static class DefaultGeneratorLazyHolder {
         static final @NotNull Scru128Generator DEFAULT_GENERATOR = new Scru128Generator();
     }

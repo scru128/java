@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class Scru128Test {
+class Scru128Tests {
     static final ArrayList<String> SAMPLES = new ArrayList<>();
 
     @BeforeAll

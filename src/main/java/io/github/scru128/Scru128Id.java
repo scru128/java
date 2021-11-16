@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -15,24 +16,12 @@ import java.util.regex.Pattern;
  * shared by multiple variables without calling the clone() method.
  */
 public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
-    private static final long serialVersionUID = 1;
+    private static final long serialVersionUID = 2;
 
     /**
-     * Internal 128-bit unsigned integer representation.
+     * Internal 128-bit byte array representation.
      */
-    private final @NotNull BigInteger value;
-
-    /**
-     * Creates an object from a 128-bit unsigned integer.
-     * <p>
-     * The primary constructor is concealed so the internal BigInteger implementation can be superseded in the future.
-     */
-    private Scru128Id(@NotNull BigInteger intValue) {
-        value = Objects.requireNonNull(intValue);
-        if (value.signum() < 0 || value.bitLength() > 128) {
-            throw new IllegalArgumentException("not a 128-bit unsigned integer: " + value);
-        }
-    }
+    private final @NotNull byte[] bytes = new byte[16];
 
     /**
      * Creates an empty object.
@@ -40,7 +29,6 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
      * This constructor is provided only for the convenience of some libraries that require parameterless constructors.
      */
     public Scru128Id() {
-        this(BigInteger.ZERO);
     }
 
     /**
@@ -51,7 +39,20 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
      * @throws IllegalArgumentException if the argument is out of the range of 128-bit unsigned integer.
      */
     public static @NotNull Scru128Id fromBigInteger(@NotNull BigInteger intValue) {
-        return new Scru128Id(intValue);
+        Objects.requireNonNull(intValue);
+        if (intValue.signum() < 0 || intValue.bitLength() > 128) {
+            throw new IllegalArgumentException("not a 128-bit unsigned integer: " + intValue);
+        }
+
+        var object = new Scru128Id();
+        var srcArray = intValue.toByteArray();
+        if (srcArray.length > 16) {
+            assert srcArray.length == 17 : "should be up to 129 bits including sign bit";
+            System.arraycopy(srcArray, srcArray.length - 16, object.bytes, 0, 16);
+        } else {
+            System.arraycopy(srcArray, 0, object.bytes, 16 - srcArray.length, srcArray.length);
+        }
+        return object;
     }
 
     /**
@@ -72,28 +73,28 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
                 timestamp > 0xFFF_FFFF_FFFFL ||
                 counter > Scru128.MAX_COUNTER ||
                 perSecRandom > Scru128.MAX_PER_SEC_RANDOM ||
-                perGenRandom > Scru128.MAX_PER_GEN_RANDOM) {
+                perGenRandom > 0xFFFF_FFFFL) {
             throw new IllegalArgumentException("invalid field value");
         }
 
-        return new Scru128Id(new BigInteger(1, new byte[]{
-                (byte) (timestamp >> 36),
-                (byte) (timestamp >> 28),
-                (byte) (timestamp >> 20),
-                (byte) (timestamp >> 12),
-                (byte) (timestamp >> 4),
-                (byte) ((timestamp << 4) | (counter >> 24)),
-                (byte) (counter >> 16),
-                (byte) (counter >> 8),
-                (byte) counter,
-                (byte) (perSecRandom >> 16),
-                (byte) (perSecRandom >> 8),
-                (byte) perSecRandom,
-                (byte) (perGenRandom >> 24),
-                (byte) (perGenRandom >> 16),
-                (byte) (perGenRandom >> 8),
-                (byte) perGenRandom,
-        }));
+        var object = new Scru128Id();
+        object.bytes[0] = (byte) (timestamp >>> 36);
+        object.bytes[1] = (byte) (timestamp >>> 28);
+        object.bytes[2] = (byte) (timestamp >>> 20);
+        object.bytes[3] = (byte) (timestamp >> 12);
+        object.bytes[4] = (byte) (timestamp >>> 4);
+        object.bytes[5] = (byte) (timestamp << 4 | counter >>> 24);
+        object.bytes[6] = (byte) (counter >>> 16);
+        object.bytes[7] = (byte) (counter >>> 8);
+        object.bytes[8] = (byte) counter;
+        object.bytes[9] = (byte) (perSecRandom >>> 16);
+        object.bytes[10] = (byte) (perSecRandom >>> 8);
+        object.bytes[11] = (byte) perSecRandom;
+        object.bytes[12] = (byte) (perGenRandom >>> 24);
+        object.bytes[13] = (byte) (perGenRandom >>> 16);
+        object.bytes[14] = (byte) (perGenRandom >>> 8);
+        object.bytes[15] = (byte) perGenRandom;
+        return object;
     }
 
     private static class ValidPatternLazyHolder {
@@ -112,7 +113,21 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
         if (!ValidPatternLazyHolder.VALID_PATTERN.matcher(strValue).matches()) {
             throw new IllegalArgumentException("invalid string representation: " + strValue);
         }
-        return new Scru128Id(new BigInteger(strValue, 32));
+
+        var object = new Scru128Id();
+        long buffer = Long.parseLong(strValue.substring(0, 2), 32);
+        assert buffer <= 0xFF : "should be no greater than `7V`";
+        object.bytes[0] = (byte) buffer;
+
+        // process three 40-bit (5-byte / 8-digit) groups
+        for (var i = 0; i < 3; i++) {
+            buffer = Long.parseLong(strValue.substring(2 + i * 8, 10 + i * 8), 32);
+            for (var j = 0; j < 5; j++) {
+                object.bytes[5 + i * 5 - j] = (byte) buffer;
+                buffer >>>= 8;
+            }
+        }
+        return object;
     }
 
     /**
@@ -121,7 +136,7 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
      * @return 128-bit unsigned integer representation.
      */
     public @NotNull BigInteger toBigInteger() {
-        return value;
+        return new BigInteger(1, bytes);
     }
 
     /**
@@ -130,7 +145,7 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
      * @return 44-bit unsigned integer.
      */
     public long getTimestamp() {
-        return value.shiftRight(84).longValue();
+        return subLong(0, 6) >>> 4;
     }
 
     /**
@@ -139,7 +154,7 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
      * @return 28-bit unsigned integer.
      */
     public int getCounter() {
-        return value.shiftRight(56).intValue() & Scru128.MAX_COUNTER;
+        return (int) (subLong(5, 9) & Scru128.MAX_COUNTER);
     }
 
     /**
@@ -148,7 +163,7 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
      * @return 24-bit unsigned integer.
      */
     public int getPerSecRandom() {
-        return value.shiftRight(32).intValue() & Scru128.MAX_PER_SEC_RANDOM;
+        return (int) subLong(9, 12);
     }
 
     /**
@@ -157,16 +172,29 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
      * @return 32-bit unsigned integer.
      */
     public long getPerGenRandom() {
-        return value.longValue() & Scru128.MAX_PER_GEN_RANDOM;
+        return subLong(12, 16);
     }
+
+    private static final char[] DIGITS = "0123456789ABCDEFGHIJKLMNOPQRSTUV".toCharArray();
 
     /**
      * Returns the 26-digit canonical string representation.
      */
     @Override
     public @NotNull String toString() {
-        var ds = value.toString(32).toUpperCase();
-        return "00000000000000000000000000".substring(ds.length()) + ds;
+        var chars = new char[26];
+        chars[0] = DIGITS[Byte.toUnsignedInt(bytes[0]) >>> 5];
+        chars[1] = DIGITS[bytes[0] & 31];
+
+        // process three 40-bit (5-byte / 8-digit) groups
+        for (var i = 0; i < 3; i++) {
+            long buffer = subLong(i * 5, i * 5 + 6);
+            for (var j = 0; j < 8; j++) {
+                chars[9 + i * 8 - j] = DIGITS[(int) (buffer & 31)];
+                buffer >>>= 5;
+            }
+        }
+        return String.valueOf(chars);
     }
 
     /**
@@ -174,7 +202,7 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
      */
     @Override
     public boolean equals(@Nullable Object other) {
-        return (other instanceof Scru128Id) && value.equals(((Scru128Id) other).value);
+        return (other instanceof Scru128Id) && Arrays.equals(bytes, ((Scru128Id) other).bytes);
     }
 
     /**
@@ -182,14 +210,30 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
      */
     @Override
     public int hashCode() {
-        return value.hashCode();
+        return Arrays.hashCode(bytes);
     }
 
     /**
-     * Returns -1, 0, and 1 if the object is less than, equal to, and greater than the argument, respectively.
+     * Returns a negative integer, zero, and positive integer if the object is less than, equal to, and greater than
+     * the argument, respectively.
      */
     @Override
     public int compareTo(@NotNull Scru128Id other) {
-        return value.compareTo(other.value);
+        Objects.requireNonNull(other);
+        return Arrays.compareUnsigned(bytes, other.bytes);
+    }
+
+    /**
+     * Returns a part of {@code bytes} as an unsigned long value.
+     *
+     * @return long value representing {@code bytes} from {@code beginIndex} to {@code endIndex - 1}, inclusive.
+     */
+    private long subLong(int beginIndex, int endIndex) {
+        long buffer = 0;
+        while (beginIndex < endIndex) {
+            buffer <<= 8;
+            buffer |= Byte.toUnsignedLong(bytes[beginIndex++]);
+        }
+        return buffer;
     }
 }
