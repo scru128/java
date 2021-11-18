@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.github.scru128"
-version = "0.3.0"
+version = "0.4.0"
 
 repositories {
     mavenCentral()
@@ -30,7 +30,7 @@ java {
     withJavadocJar()
 
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
+        languageVersion.set(JavaLanguageVersion.of(8))
     }
 }
 

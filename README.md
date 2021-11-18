@@ -48,9 +48,14 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.scru128:scru128:0.3.0")
+    implementation("io.github.scru128:scru128:0.4.0")
 }
 ```
+
+## Target environment
+
+- Java 8 or higher
+- Android API level 21 (Android 5.0) or higher
 
 ## License
 

@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.security.SecureRandom;
 import java.util.Random;
+import java.util.logging.Logger;
 
 /**
  * Represents a SCRU128 ID generator and provides an interface to do more than just generate a string representation.
@@ -67,20 +68,20 @@ public class Scru128Generator {
      * Generates a new SCRU128 ID object without overhead for thread safety.
      */
     private @NotNull Scru128Id generateThreadUnsafe() {
-        var tsNow = System.currentTimeMillis();
+        long tsNow = System.currentTimeMillis();
 
         // update timestamp and counter
         if (tsNow > tsLastGen) {
             tsLastGen = tsNow;
             counter = random.nextInt() & Scru128.MAX_COUNTER;
         } else if (++counter > Scru128.MAX_COUNTER) {
-            var logger = System.getLogger("io.github.scru128");
-            logger.log(System.Logger.Level.INFO, "counter limit reached; will wait until clock goes forward");
-            var nClockCheck = 0;
+            Logger logger = Logger.getLogger(Scru128Generator.class.getName());
+            logger.info("counter limit reached; will wait until clock goes forward");
+            int nClockCheck = 0;
             while (tsNow <= tsLastGen) {
                 tsNow = System.currentTimeMillis();
                 if (++nClockCheck > nClockCheckMax) {
-                    logger.log(System.Logger.Level.WARNING, "reset state as clock did not go forward");
+                    logger.warning("reset state as clock did not go forward");
                     tsLastSec = 0;
                     break;
                 }
@@ -100,7 +101,7 @@ public class Scru128Generator {
                 tsNow - Scru128.TIMESTAMP_BIAS,
                 counter,
                 perSecRandom,
-                Integer.toUnsignedLong(random.nextInt())
+                0xFFFF_FFFFL & random.nextInt()
         );
     }
 }

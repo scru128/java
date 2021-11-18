@@ -16,12 +16,12 @@ import java.util.regex.Pattern;
  * shared by multiple variables without calling the clone() method.
  */
 public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
-    private static final long serialVersionUID = 2;
+    private static final long serialVersionUID = 3;
 
     /**
      * Internal 128-bit byte array representation.
      */
-    private final @NotNull byte[] bytes = new byte[16];
+    private final byte[] bytes = new byte[16];
 
     /**
      * Creates an empty object.
@@ -44,8 +44,8 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
             throw new IllegalArgumentException("not a 128-bit unsigned integer: " + intValue);
         }
 
-        var object = new Scru128Id();
-        var srcArray = intValue.toByteArray();
+        Scru128Id object = new Scru128Id();
+        byte[] srcArray = intValue.toByteArray();
         if (srcArray.length > 16) {
             assert srcArray.length == 17 : "should be up to 129 bits including sign bit";
             System.arraycopy(srcArray, srcArray.length - 16, object.bytes, 0, 16);
@@ -77,7 +77,7 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
             throw new IllegalArgumentException("invalid field value");
         }
 
-        var object = new Scru128Id();
+        Scru128Id object = new Scru128Id();
         object.bytes[0] = (byte) (timestamp >>> 36);
         object.bytes[1] = (byte) (timestamp >>> 28);
         object.bytes[2] = (byte) (timestamp >>> 20);
@@ -114,15 +114,15 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
             throw new IllegalArgumentException("invalid string representation: " + strValue);
         }
 
-        var object = new Scru128Id();
+        Scru128Id object = new Scru128Id();
         long buffer = Long.parseLong(strValue.substring(0, 2), 32);
         assert buffer <= 0xFF : "should be no greater than `7V`";
         object.bytes[0] = (byte) buffer;
 
         // process three 40-bit (5-byte / 8-digit) groups
-        for (var i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; i++) {
             buffer = Long.parseLong(strValue.substring(2 + i * 8, 10 + i * 8), 32);
-            for (var j = 0; j < 5; j++) {
+            for (int j = 0; j < 5; j++) {
                 object.bytes[5 + i * 5 - j] = (byte) buffer;
                 buffer >>>= 8;
             }
@@ -182,14 +182,14 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
      */
     @Override
     public @NotNull String toString() {
-        var chars = new char[26];
-        chars[0] = DIGITS[Byte.toUnsignedInt(bytes[0]) >>> 5];
+        char[] chars = new char[26];
+        chars[0] = DIGITS[(0xFF & bytes[0]) >>> 5];
         chars[1] = DIGITS[bytes[0] & 31];
 
         // process three 40-bit (5-byte / 8-digit) groups
-        for (var i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; i++) {
             long buffer = subLong(i * 5, i * 5 + 6);
-            for (var j = 0; j < 8; j++) {
+            for (int j = 0; j < 8; j++) {
                 chars[9 + i * 8 - j] = DIGITS[(int) (buffer & 31)];
                 buffer >>>= 5;
             }
@@ -220,7 +220,13 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
     @Override
     public int compareTo(@NotNull Scru128Id other) {
         Objects.requireNonNull(other);
-        return Arrays.compareUnsigned(bytes, other.bytes);
+        for (int i = 0; i < bytes.length; i++) {
+            int diff = Integer.compare(0xFF & bytes[i], 0xFF & other.bytes[i]);
+            if (diff != 0) {
+                return diff;
+            }
+        }
+        return 0;
     }
 
     /**
@@ -232,7 +238,7 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
         long buffer = 0;
         while (beginIndex < endIndex) {
             buffer <<= 8;
-            buffer |= Byte.toUnsignedLong(bytes[beginIndex++]);
+            buffer |= 0xFFL & bytes[beginIndex++];
         }
         return buffer;
     }

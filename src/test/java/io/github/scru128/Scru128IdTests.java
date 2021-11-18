@@ -28,7 +28,7 @@ class Scru128IdTests {
             }
         }
 
-        var cases = new ArrayList<Case>();
+        ArrayList<Case> cases = new ArrayList<>();
         cases.add(new Case(0, 0, 0, 0, "00000000000000000000000000"));
         cases.add(new Case((long) Math.pow(2, 44) - 1, 0, 0, 0, "7VVVVVVVVG0000000000000000"));
         cases.add(new Case(0, (int) Math.pow(2, 28) - 1, 0, 0, "000000000FVVVVU00000000000"));
@@ -37,9 +37,9 @@ class Scru128IdTests {
         cases.add(new Case((long) Math.pow(2, 44) - 1, (int) Math.pow(2, 28) - 1, (int) Math.pow(2, 24) - 1,
                 (long) Math.pow(2, 32) - 1, "7VVVVVVVVVVVVVVVVVVVVVVVVV"));
 
-        for (var e : cases) {
-            var fromFields = Scru128Id.fromFields(e.timestamp, e.counter, e.perSecRandom, e.perGenRandom);
-            var fromString = Scru128Id.fromString(e.string);
+        for (Case e : cases) {
+            Scru128Id fromFields = Scru128Id.fromFields(e.timestamp, e.counter, e.perSecRandom, e.perGenRandom);
+            Scru128Id fromString = Scru128Id.fromString(e.string);
 
             assertEquals(fromFields, fromString);
             assertEquals(new BigInteger(e.string, 32), fromFields.toBigInteger());
@@ -60,9 +60,9 @@ class Scru128IdTests {
     @Test
     @DisplayName("Has symmetric converters from/to String, BigInteger, and fields")
     void testSymmetricConverters() {
-        var g = new Scru128Generator();
-        for (var i = 0; i < 1_000; i++) {
-            var obj = g.generate();
+        Scru128Generator g = new Scru128Generator();
+        for (int i = 0; i < 1_000; i++) {
+            Scru128Id obj = g.generate();
             assertEquals(obj, Scru128Id.fromString(obj.toString()));
             assertEquals(obj, Scru128Id.fromBigInteger(obj.toBigInteger()));
             assertEquals(obj, Scru128Id.fromFields(obj.getTimestamp(), obj.getCounter(), obj.getPerSecRandom(),
@@ -73,27 +73,27 @@ class Scru128IdTests {
     @Test
     @DisplayName("Supports comparison methods")
     void testComparisonMethods() {
-        var ordered = new ArrayList<Scru128Id>();
+        ArrayList<Scru128Id> ordered = new ArrayList<>();
         ordered.add(Scru128Id.fromFields(0, 0, 0, 0));
         ordered.add(Scru128Id.fromFields(0, 0, 0, 1));
         ordered.add(Scru128Id.fromFields(0, 0, 1, 0));
         ordered.add(Scru128Id.fromFields(0, 1, 0, 0));
         ordered.add(Scru128Id.fromFields(1, 0, 0, 0));
 
-        var g = new Scru128Generator();
-        for (var i = 0; i < 1_000; i++) {
+        Scru128Generator g = new Scru128Generator();
+        for (int i = 0; i < 1_000; i++) {
             ordered.add(g.generate());
         }
 
-        var prev = ordered.remove(0);
-        for (var curr : ordered) {
+        Scru128Id prev = ordered.remove(0);
+        for (Scru128Id curr : ordered) {
             assertFalse(curr.equals(prev));
             assertFalse(prev.equals(curr));
             assertNotEquals(curr.hashCode(), prev.hashCode());
             assertTrue(curr.compareTo(prev) > 0);
             assertTrue(prev.compareTo(curr) < 0);
 
-            var clone = Scru128Id.fromString(curr.toString());
+            Scru128Id clone = Scru128Id.fromString(curr.toString());
             assertFalse(curr == clone);
             assertTrue(curr.equals(clone));
             assertTrue(clone.equals(curr));

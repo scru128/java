@@ -13,6 +13,6 @@
  * <li>84-bit <em>layered</em> randomness for collision resistance</li>
  * </ul>
  *
- * @see <a href="https://github.com/scru128/spec">SCRU128 Specification</a> for details.
+ * @see <a href="https://github.com/scru128/spec">SCRU128 Specification</a>
  */
 package io.github.scru128;
