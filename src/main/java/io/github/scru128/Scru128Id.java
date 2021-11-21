@@ -81,7 +81,7 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
         object.bytes[0] = (byte) (timestamp >>> 36);
         object.bytes[1] = (byte) (timestamp >>> 28);
         object.bytes[2] = (byte) (timestamp >>> 20);
-        object.bytes[3] = (byte) (timestamp >> 12);
+        object.bytes[3] = (byte) (timestamp >>> 12);
         object.bytes[4] = (byte) (timestamp >>> 4);
         object.bytes[5] = (byte) (timestamp << 4 | counter >>> 24);
         object.bytes[6] = (byte) (counter >>> 16);
@@ -115,13 +115,11 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
         }
 
         Scru128Id object = new Scru128Id();
-        long buffer = Long.parseLong(strValue.substring(0, 2), 32);
-        assert buffer <= 0xFF : "should be no greater than `7V`";
-        object.bytes[0] = (byte) buffer;
+        object.bytes[0] = (byte) Integer.parseInt(strValue.substring(0, 2), 32);
 
         // process three 40-bit (5-byte / 8-digit) groups
         for (int i = 0; i < 3; i++) {
-            buffer = Long.parseLong(strValue.substring(2 + i * 8, 10 + i * 8), 32);
+            long buffer = Long.parseLong(strValue.substring(2 + i * 8, 10 + i * 8), 32);
             for (int j = 0; j < 5; j++) {
                 object.bytes[5 + i * 5 - j] = (byte) buffer;
                 buffer >>>= 8;
@@ -188,7 +186,7 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
 
         // process three 40-bit (5-byte / 8-digit) groups
         for (int i = 0; i < 3; i++) {
-            long buffer = subLong(i * 5, i * 5 + 6);
+            long buffer = subLong(1 + i * 5, 6 + i * 5);
             for (int j = 0; j < 8; j++) {
                 chars[9 + i * 8 - j] = DIGITS[(int) (buffer & 31)];
                 buffer >>>= 5;
