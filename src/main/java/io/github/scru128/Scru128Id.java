@@ -15,13 +15,13 @@ import java.util.regex.Pattern;
  * This class is designed to be an immutable data class, and thus the reference to an object can be safely copied and
  * shared by multiple variables without calling the clone() method.
  */
-public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
+public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializable {
     private static final long serialVersionUID = 3;
 
     /**
      * Internal 128-bit byte array representation.
      */
-    private final byte[] bytes = new byte[16];
+    private final @NotNull byte[] bytes = new byte[16];
 
     /**
      * Creates an empty object.
@@ -29,6 +29,32 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
      * This constructor is provided only for the convenience of some libraries that require parameterless constructors.
      */
     public Scru128Id() {
+    }
+
+    /**
+     * Creates an object from a byte array that represents a 128-bit unsigned integer.
+     *
+     * @param byteArray any byte array that represents a 128-bit unsigned integer in the big-endian (network) byte
+     *                  order. The byte array can be shorter than 16 bytes (128 bits) and in that case the missing
+     *                  significant bytes are all assumed to be zero, or it can be longer than 16 bytes as long as
+     *                  the extra significant bytes are all zero.
+     * @return new object.
+     * @throws IllegalArgumentException if the argument byte array does not fit in 128 bits.
+     */
+    public static @NotNull Scru128Id fromByteArray(@NotNull byte[] byteArray) {
+        Objects.requireNonNull(byteArray);
+        Scru128Id object = new Scru128Id();
+        if (byteArray.length <= 16) {
+            System.arraycopy(byteArray, 0, object.bytes, 16 - byteArray.length, byteArray.length);
+        } else {
+            for (int i = 0; i < byteArray.length - 16; i++) {
+                if (byteArray[i] != 0) {
+                    throw new IllegalArgumentException("cannot be interpreted as a 128-bit unsigned integer");
+                }
+            }
+            System.arraycopy(byteArray, byteArray.length - 16, object.bytes, 0, 16);
+        }
+        return object;
     }
 
     /**
@@ -43,16 +69,7 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
         if (intValue.signum() < 0 || intValue.bitLength() > 128) {
             throw new IllegalArgumentException("not a 128-bit unsigned integer: " + intValue);
         }
-
-        Scru128Id object = new Scru128Id();
-        byte[] srcArray = intValue.toByteArray();
-        if (srcArray.length > 16) {
-            assert srcArray.length == 17 : "should be up to 129 bits including sign bit";
-            System.arraycopy(srcArray, srcArray.length - 16, object.bytes, 0, 16);
-        } else {
-            System.arraycopy(srcArray, 0, object.bytes, 16 - srcArray.length, srcArray.length);
-        }
-        return object;
+        return fromByteArray(intValue.toByteArray());
     }
 
     /**
@@ -129,6 +146,16 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
     }
 
     /**
+     * Returns a byte array containing the 128-bit unsigned integer representation.
+     *
+     * @return 16-byte byte array containing the 128-bit unsigned integer representation in the big-endian (network)
+     * byte order.
+     */
+    public @NotNull byte[] toByteArray() {
+        return Arrays.copyOf(bytes, 16);
+    }
+
+    /**
      * Returns the 128-bit unsigned integer representation.
      *
      * @return 128-bit unsigned integer representation.
@@ -173,7 +200,7 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
         return subLong(12, 16);
     }
 
-    private static final char[] DIGITS = "0123456789ABCDEFGHIJKLMNOPQRSTUV".toCharArray();
+    private static final @NotNull char[] DIGITS = "0123456789ABCDEFGHIJKLMNOPQRSTUV".toCharArray();
 
     /**
      * Returns the 26-digit canonical string representation.
@@ -219,9 +246,8 @@ public final class Scru128Id implements Comparable<Scru128Id>, Serializable {
     public int compareTo(@NotNull Scru128Id other) {
         Objects.requireNonNull(other);
         for (int i = 0; i < bytes.length; i++) {
-            int diff = Integer.compare(0xFF & bytes[i], 0xFF & other.bytes[i]);
-            if (diff != 0) {
-                return diff;
+            if (bytes[i] != other.bytes[i]) {
+                return Integer.compare(0xFF & bytes[i], 0xFF & other.bytes[i]);
             }
         }
         return 0;

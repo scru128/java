@@ -48,7 +48,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.scru128:scru128:0.4.1")
+    implementation("io.github.scru128:scru128:0.5.0")
 }
 ```
 

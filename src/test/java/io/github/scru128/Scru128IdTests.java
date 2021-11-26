@@ -3,6 +3,7 @@ package io.github.scru128;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.io.*;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
@@ -58,15 +59,27 @@ class Scru128IdTests {
     }
 
     @Test
-    @DisplayName("Has symmetric converters from/to String, BigInteger, and fields")
-    void testSymmetricConverters() {
+    @DisplayName("Has symmetric converters from/to String, byte array, BigInteger, fields, and serialized form")
+    void testSymmetricConverters() throws IOException, ClassNotFoundException {
         Scru128Generator g = new Scru128Generator();
         for (int i = 0; i < 1_000; i++) {
             Scru128Id obj = g.generate();
             assertEquals(obj, Scru128Id.fromString(obj.toString()));
+            assertEquals(obj, Scru128Id.fromByteArray(obj.toByteArray()));
             assertEquals(obj, Scru128Id.fromBigInteger(obj.toBigInteger()));
             assertEquals(obj, Scru128Id.fromFields(obj.getTimestamp(), obj.getCounter(), obj.getPerSecRandom(),
                     obj.getPerGenRandom()));
+
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            oos.writeObject(obj);
+            oos.close();
+            bos.close();
+            ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+            ObjectInputStream ois = new ObjectInputStream(bis);
+            assertEquals(obj, ois.readObject());
+            ois.close();
+            bis.close();
         }
     }
 
@@ -76,9 +89,13 @@ class Scru128IdTests {
         ArrayList<Scru128Id> ordered = new ArrayList<>();
         ordered.add(Scru128Id.fromFields(0, 0, 0, 0));
         ordered.add(Scru128Id.fromFields(0, 0, 0, 1));
+        ordered.add(Scru128Id.fromFields(0, 0, 0, 0xFFFF_FFFFL));
         ordered.add(Scru128Id.fromFields(0, 0, 1, 0));
+        ordered.add(Scru128Id.fromFields(0, 0, 0xFF_FFFF, 0));
         ordered.add(Scru128Id.fromFields(0, 1, 0, 0));
+        ordered.add(Scru128Id.fromFields(0, 0xFFF_FFFF, 0, 0));
         ordered.add(Scru128Id.fromFields(1, 0, 0, 0));
+        ordered.add(Scru128Id.fromFields(2, 0, 0, 0));
 
         Scru128Generator g = new Scru128Generator();
         for (int i = 0; i < 1_000; i++) {
