@@ -62,7 +62,7 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
      *
      * @param intValue 128-bit unsigned integer representation.
      * @return new object.
-     * @throws IllegalArgumentException if the argument is out of the range of 128-bit unsigned integer.
+     * @throws IllegalArgumentException if the argument is out of the value range of 128-bit unsigned integer.
      */
     public static @NotNull Scru128Id fromBigInteger(@NotNull BigInteger intValue) {
         Objects.requireNonNull(intValue);
@@ -80,7 +80,7 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
      * @param perSecRandom 24-bit per-second randomness field value.
      * @param perGenRandom 32-bit per-generation randomness field value.
      * @return new object.
-     * @throws IllegalArgumentException if any argument is out of the range of each field.
+     * @throws IllegalArgumentException if any argument is out of the value range of the field.
      */
     public static @NotNull Scru128Id fromFields(long timestamp, int counter, int perSecRandom, long perGenRandom) {
         if (timestamp < 0 ||
@@ -200,6 +200,9 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
         return subLong(12, 16);
     }
 
+    /**
+     * Digit characters used in the base 32 notation.
+     */
     private static final @NotNull char[] DIGITS = "0123456789ABCDEFGHIJKLMNOPQRSTUV".toCharArray();
 
     /**

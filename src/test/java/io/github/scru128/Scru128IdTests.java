@@ -59,7 +59,7 @@ class Scru128IdTests {
     }
 
     @Test
-    @DisplayName("Has symmetric converters from/to String, byte array, BigInteger, fields, and serialized form")
+    @DisplayName("Has symmetric converters from/to String, BigInteger, byte array, fields, and serialized form")
     void testSymmetricConverters() throws IOException, ClassNotFoundException {
         Scru128Generator g = new Scru128Generator();
         for (int i = 0; i < 1_000; i++) {

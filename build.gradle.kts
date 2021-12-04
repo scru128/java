@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.github.scru128"
-version = "0.5.0"
+version = "0.6.0"
 
 repositories {
     mavenCentral()
@@ -16,7 +16,7 @@ dependencies {
     compileOnly("org.jetbrains:annotations:23.0.0")
 
     // Use JUnit Jupiter for testing.
-    testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
 }
 
 tasks.test {

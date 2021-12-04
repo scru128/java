@@ -16,17 +16,27 @@ Kotlin examples:
 ```kotlin
 import io.github.scru128.Scru128
 
-println(Scru128.scru128()) // e.g. "00R5B73KHDE4DDE3K37FIIVA8H"
-println(Scru128.scru128()) // e.g. "00R5B73KHDE4DDG3K37CD8D04L"
+// generate a new identifier object
+val x = Scru128.generate()
+println(x) // e.g. "00S6GVKR1MH58KE72EJD87SDOO"
+println(x.toBigInteger()) // as a 128-bit unsigned integer
+
+// generate a textual representation directly
+println(Scru128.generateString()) // e.g. "00S6GVKR3F7R79I72EJF0J4RGC"
 ```
 
 Java examples:
 
 ```java
-import io.github.scru128.Scru128;
+import io.github.scru128.*;
 
-System.out.println(Scru128.scru128()); // e.g. "00R5B73KHDE4DDE3K37FIIVA8H"
-System.out.println(Scru128.scru128()); // e.g. "00R5B73KHDE4DDG3K37CD8D04L"
+// generate a new identifier object
+Scru128Id x = Scru128.generate();
+System.out.println(x); // e.g. "00S6GVKR1MH58KE72EJD87SDOO"
+System.out.println(x.toBigInteger()); // as a 128-bit unsigned integer
+
+// generate a textual representation directly
+System.out.println(Scru128.generateString()); // e.g. "00S6GVKR3F7R79I72EJF0J4RGC"
 ```
 
 See [SCRU128 Specification] for details.
@@ -48,7 +58,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.scru128:scru128:0.5.0")
+    implementation("io.github.scru128:scru128:0.6.0")
 }
 ```
 

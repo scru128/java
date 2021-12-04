@@ -7,7 +7,7 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 /**
- * Represents a SCRU128 ID generator and provides an interface to do more than just generate a string representation.
+ * Represents a SCRU128 ID generator that encapsulates the monotonic counter and other internal states.
  */
 public class Scru128Generator {
     /**
@@ -31,7 +31,7 @@ public class Scru128Generator {
     private int perSecRandom = 0;
 
     /**
-     * Maximum number of checking System.currentTimeMillis() until clock goes forward.
+     * Maximum number of checking the system clock until it goes forward.
      */
     private final int nClockCheckMax = 1_000_000;
 
@@ -68,9 +68,8 @@ public class Scru128Generator {
      * Generates a new SCRU128 ID object without overhead for thread safety.
      */
     private @NotNull Scru128Id generateThreadUnsafe() {
-        long tsNow = System.currentTimeMillis();
-
         // update timestamp and counter
+        long tsNow = System.currentTimeMillis();
         if (tsNow > tsLastGen) {
             tsLastGen = tsNow;
             counter = random.nextInt() & Scru128.MAX_COUNTER;

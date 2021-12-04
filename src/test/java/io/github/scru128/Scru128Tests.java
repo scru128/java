@@ -17,7 +17,7 @@ class Scru128Tests {
     @BeforeAll
     static void setup() {
         for (int i = 0; i < 100_000; i++) {
-            SAMPLES.add(Scru128.scru128());
+            SAMPLES.add(Scru128.generateString());
         }
     }
 
@@ -72,12 +72,12 @@ class Scru128Tests {
     @Test
     @DisplayName("Generates no IDs sharing same timestamp and counter under multithreading")
     void testThreading() throws InterruptedException {
-        ArrayList<String> queue = new ArrayList<>();
+        ArrayList<Scru128Id> queue = new ArrayList<>();
         ArrayList<Thread> producers = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
             Thread thread = new Thread(() -> {
                 for (int j = 0; j < 10_000; j++) {
-                    String x = Scru128.scru128();
+                    Scru128Id x = Scru128.generate();
                     synchronized (queue) {
                         queue.add(x);
                     }
@@ -92,9 +92,8 @@ class Scru128Tests {
         }
 
         HashSet<String> set = new HashSet<>();
-        for (String e : queue) {
-            Scru128Id x = Scru128Id.fromString(e);
-            set.add(String.format("%011x-%07x", x.getTimestamp(), x.getCounter()));
+        for (Scru128Id e : queue) {
+            set.add(String.format("%011x-%07x", e.getTimestamp(), e.getCounter()));
         }
 
         assertEquals(4 * 10_000, set.size());
