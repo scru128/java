@@ -32,21 +32,27 @@ class Scru128IdTests {
         ArrayList<Case> cases = new ArrayList<>();
         cases.add(new Case(0, 0, 0, 0, "00000000000000000000000000"));
         cases.add(new Case((long) Math.pow(2, 44) - 1, 0, 0, 0, "7VVVVVVVVG0000000000000000"));
+        cases.add(new Case((long) Math.pow(2, 44) - 1, 0, 0, 0, "7vvvvvvvvg0000000000000000"));
         cases.add(new Case(0, (int) Math.pow(2, 28) - 1, 0, 0, "000000000FVVVVU00000000000"));
+        cases.add(new Case(0, (int) Math.pow(2, 28) - 1, 0, 0, "000000000fvvvvu00000000000"));
         cases.add(new Case(0, 0, (int) Math.pow(2, 24) - 1, 0, "000000000000001VVVVS000000"));
+        cases.add(new Case(0, 0, (int) Math.pow(2, 24) - 1, 0, "000000000000001vvvvs000000"));
         cases.add(new Case(0, 0, 0, (long) Math.pow(2, 32) - 1, "00000000000000000003VVVVVV"));
+        cases.add(new Case(0, 0, 0, (long) Math.pow(2, 32) - 1, "00000000000000000003vvvvvv"));
         cases.add(new Case((long) Math.pow(2, 44) - 1, (int) Math.pow(2, 28) - 1, (int) Math.pow(2, 24) - 1,
                 (long) Math.pow(2, 32) - 1, "7VVVVVVVVVVVVVVVVVVVVVVVVV"));
+        cases.add(new Case((long) Math.pow(2, 44) - 1, (int) Math.pow(2, 28) - 1, (int) Math.pow(2, 24) - 1,
+                (long) Math.pow(2, 32) - 1, "7vvvvvvvvvvvvvvvvvvvvvvvvv"));
 
         for (Case e : cases) {
             Scru128Id fromFields = Scru128Id.fromFields(e.timestamp, e.counter, e.perSecRandom, e.perGenRandom);
             Scru128Id fromString = Scru128Id.fromString(e.string);
 
             assertEquals(fromFields, fromString);
-            assertEquals(new BigInteger(e.string, 32), fromFields.toBigInteger());
-            assertEquals(new BigInteger(e.string, 32), fromString.toBigInteger());
-            assertEquals(e.string, fromFields.toString());
-            assertEquals(e.string, fromString.toString());
+            assertEquals(new BigInteger(e.string, 32), new BigInteger(1, fromFields.toByteArray()));
+            assertEquals(new BigInteger(e.string, 32), new BigInteger(1, fromString.toByteArray()));
+            assertEquals(e.string.toUpperCase(), fromFields.toString());
+            assertEquals(e.string.toUpperCase(), fromString.toString());
             assertEquals(e.timestamp, fromFields.getTimestamp());
             assertEquals(e.timestamp, fromString.getTimestamp());
             assertEquals(e.counter, fromFields.getCounter());
@@ -59,14 +65,39 @@ class Scru128IdTests {
     }
 
     @Test
-    @DisplayName("Has symmetric converters from/to String, BigInteger, byte array, fields, and serialized form")
+    @DisplayName("Throws error if an invalid string representation is supplied")
+    void testStringValidation() {
+        ArrayList<String> cases = new ArrayList<>();
+        cases.add("");
+        cases.add(" 00SCT4FL89GQPRHN44C4LFM0OV");
+        cases.add("00SCT4FL89GQPRJN44C7SQO381 ");
+        cases.add(" 00SCT4FL89GQPRLN44C4BGCIIO ");
+        cases.add("+00SCT4FL89GQPRNN44C4F3QD24");
+        cases.add("-00SCT4FL89GQPRPN44C7H4E5RC");
+        cases.add("+0SCT4FL89GQPRRN44C55Q7RVC");
+        cases.add("-0SCT4FL89GQPRTN44C6PN0A2R");
+        cases.add("00SCT4FL89WQPRVN44C41RGVMM");
+        cases.add("00SCT4FL89GQPS1N4_C54QDC5O");
+        cases.add("00SCT4-L89GQPS3N44C602O0K8");
+        cases.add("00SCT4FL89GQPS N44C7VHS5QJ");
+        cases.add("80000000000000000000000000");
+        cases.add("VVVVVVVVVVVVVVVVVVVVVVVVVV");
+
+        for (String e : cases) {
+            assertThrows(IllegalArgumentException.class, () -> {
+                Scru128Id.fromString(e);
+            });
+        }
+    }
+
+    @Test
+    @DisplayName("Has symmetric converters from/to String, byte array, fields, and serialized form")
     void testSymmetricConverters() throws IOException, ClassNotFoundException {
         Scru128Generator g = new Scru128Generator();
         for (int i = 0; i < 1_000; i++) {
             Scru128Id obj = g.generate();
             assertEquals(obj, Scru128Id.fromString(obj.toString()));
             assertEquals(obj, Scru128Id.fromByteArray(obj.toByteArray()));
-            assertEquals(obj, Scru128Id.fromBigInteger(obj.toBigInteger()));
             assertEquals(obj, Scru128Id.fromFields(obj.getTimestamp(), obj.getCounter(), obj.getPerSecRandom(),
                     obj.getPerGenRandom()));
 

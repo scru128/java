@@ -4,7 +4,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.security.SecureRandom;
 import java.util.Random;
-import java.util.logging.Logger;
 
 /**
  * Represents a SCRU128 ID generator that encapsulates the monotonic counter and other internal states.
@@ -74,13 +73,16 @@ public class Scru128Generator {
             tsLastGen = tsNow;
             counter = random.nextInt() & Scru128.MAX_COUNTER;
         } else if (++counter > Scru128.MAX_COUNTER) {
-            Logger logger = Logger.getLogger(Scru128Generator.class.getName());
-            logger.info("counter limit reached; will wait until clock goes forward");
+            if (Scru128.logger != null) {
+                Scru128.logger.info("counter limit reached; will wait until clock goes forward");
+            }
             int nClockCheck = 0;
             while (tsNow <= tsLastGen) {
                 tsNow = System.currentTimeMillis();
                 if (++nClockCheck > nClockCheckMax) {
-                    logger.warning("reset state as clock did not go forward");
+                    if (Scru128.logger != null) {
+                        Scru128.logger.warn("reset state as clock did not go forward");
+                    }
                     tsLastSec = 0;
                     break;
                 }

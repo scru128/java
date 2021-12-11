@@ -19,7 +19,7 @@ import io.github.scru128.Scru128
 // generate a new identifier object
 val x = Scru128.generate()
 println(x) // e.g. "00S6GVKR1MH58KE72EJD87SDOO"
-println(x.toBigInteger()) // as a 128-bit unsigned integer
+println(x.toByteArray()) // as a 128-bit unsigned integer in big-endian byte array
 
 // generate a textual representation directly
 println(Scru128.generateString()) // e.g. "00S6GVKR3F7R79I72EJF0J4RGC"
@@ -33,7 +33,7 @@ import io.github.scru128.*;
 // generate a new identifier object
 Scru128Id x = Scru128.generate();
 System.out.println(x); // e.g. "00S6GVKR1MH58KE72EJD87SDOO"
-System.out.println(x.toBigInteger()); // as a 128-bit unsigned integer
+System.out.println(x.toByteArray()); // as a 128-bit unsigned integer in big-endian byte array
 
 // generate a textual representation directly
 System.out.println(Scru128.generateString()); // e.g. "00S6GVKR3F7R79I72EJF0J4RGC"
@@ -58,7 +58,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.scru128:scru128:0.6.0")
+    implementation("io.github.scru128:scru128:0.7.0")
 }
 ```
 

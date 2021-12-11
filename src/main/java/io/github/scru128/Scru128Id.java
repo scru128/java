@@ -4,13 +4,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
-import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
- * Represents a SCRU128 ID and provides converters to/from String and 128-bit unsigned integer.
+ * Represents a SCRU128 ID and provides various converters and comparison operators.
  * <p>
  * This class is designed to be an immutable data class, and thus the reference to an object can be safely copied and
  * shared by multiple variables without calling the clone() method.
@@ -55,21 +54,6 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
             System.arraycopy(byteArray, byteArray.length - 16, object.bytes, 0, 16);
         }
         return object;
-    }
-
-    /**
-     * Creates an object from a 128-bit unsigned integer.
-     *
-     * @param intValue 128-bit unsigned integer representation.
-     * @return new object.
-     * @throws IllegalArgumentException if the argument is out of the value range of 128-bit unsigned integer.
-     */
-    public static @NotNull Scru128Id fromBigInteger(@NotNull BigInteger intValue) {
-        Objects.requireNonNull(intValue);
-        if (intValue.signum() < 0 || intValue.bitLength() > 128) {
-            throw new IllegalArgumentException("not a 128-bit unsigned integer: " + intValue);
-        }
-        return fromByteArray(intValue.toByteArray());
     }
 
     /**
@@ -153,15 +137,6 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
      */
     public @NotNull byte[] toByteArray() {
         return Arrays.copyOf(bytes, 16);
-    }
-
-    /**
-     * Returns the 128-bit unsigned integer representation.
-     *
-     * @return 128-bit unsigned integer representation.
-     */
-    public @NotNull BigInteger toBigInteger() {
-        return new BigInteger(1, bytes);
     }
 
     /**
