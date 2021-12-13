@@ -1,5 +1,8 @@
 # SCRU128: Sortable, Clock and Random number-based Unique identifier
 
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.scru128/scru128)](https://search.maven.org/artifact/io.github.scru128/scru128)
+[![License](https://img.shields.io/github/license/scru128/java)](https://github.com/scru128/java/blob/main/LICENSE)
+
 SCRU128 ID is yet another attempt to supersede [UUID] in the use cases that need
 decentralized, globally unique time-ordered identifiers. SCRU128 is inspired by
 [ULID] and [KSUID] and has the following features:
@@ -48,9 +51,7 @@ See [SCRU128 Specification] for details.
 
 ## Installation
 
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.scru128/scru128.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.scru128%22%20AND%20a:%22scru128%22)
-
-Obtain a copy from Maven Central Repository. `build.gradle.kts` example:
+Obtain a copy from [Maven Central Repository]. `build.gradle.kts` example:
 
 ```kotlin
 repositories {
@@ -58,9 +59,11 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.scru128:scru128:0.7.0")
+    implementation("io.github.scru128:scru128:0.7.1")
 }
 ```
+
+[maven central repository]: https://search.maven.org/artifact/io.github.scru128/scru128
 
 ## Target environment
 
@@ -69,18 +72,7 @@ dependencies {
 
 ## License
 
-Copyright 2021 LiosK
-
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-this file except in compliance with the License. You may obtain a copy of the
-License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software distributed
-under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-CONDITIONS OF ANY KIND, either express or implied. See the License for the
-specific language governing permissions and limitations under the License.
+Licensed under the Apache License, Version 2.0.
 
 ## See also
 

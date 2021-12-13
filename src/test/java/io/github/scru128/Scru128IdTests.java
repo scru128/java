@@ -10,6 +10,11 @@ import java.util.ArrayList;
 import static org.junit.jupiter.api.Assertions.*;
 
 class Scru128IdTests {
+    static final long MAX_UINT44 = (1L << 44L) - 1L;
+    static final int MAX_UINT28 = (1 << 28) - 1;
+    static final int MAX_UINT24 = (1 << 24) - 1;
+    static final long MAX_UINT32 = (1L << 32L) - 1L;
+
     @Test
     @DisplayName("Encodes and decodes prepared cases correctly")
     void testEncodeDecode() {
@@ -31,18 +36,16 @@ class Scru128IdTests {
 
         ArrayList<Case> cases = new ArrayList<>();
         cases.add(new Case(0, 0, 0, 0, "00000000000000000000000000"));
-        cases.add(new Case((long) Math.pow(2, 44) - 1, 0, 0, 0, "7VVVVVVVVG0000000000000000"));
-        cases.add(new Case((long) Math.pow(2, 44) - 1, 0, 0, 0, "7vvvvvvvvg0000000000000000"));
-        cases.add(new Case(0, (int) Math.pow(2, 28) - 1, 0, 0, "000000000FVVVVU00000000000"));
-        cases.add(new Case(0, (int) Math.pow(2, 28) - 1, 0, 0, "000000000fvvvvu00000000000"));
-        cases.add(new Case(0, 0, (int) Math.pow(2, 24) - 1, 0, "000000000000001VVVVS000000"));
-        cases.add(new Case(0, 0, (int) Math.pow(2, 24) - 1, 0, "000000000000001vvvvs000000"));
-        cases.add(new Case(0, 0, 0, (long) Math.pow(2, 32) - 1, "00000000000000000003VVVVVV"));
-        cases.add(new Case(0, 0, 0, (long) Math.pow(2, 32) - 1, "00000000000000000003vvvvvv"));
-        cases.add(new Case((long) Math.pow(2, 44) - 1, (int) Math.pow(2, 28) - 1, (int) Math.pow(2, 24) - 1,
-                (long) Math.pow(2, 32) - 1, "7VVVVVVVVVVVVVVVVVVVVVVVVV"));
-        cases.add(new Case((long) Math.pow(2, 44) - 1, (int) Math.pow(2, 28) - 1, (int) Math.pow(2, 24) - 1,
-                (long) Math.pow(2, 32) - 1, "7vvvvvvvvvvvvvvvvvvvvvvvvv"));
+        cases.add(new Case(MAX_UINT44, 0, 0, 0, "7VVVVVVVVG0000000000000000"));
+        cases.add(new Case(MAX_UINT44, 0, 0, 0, "7vvvvvvvvg0000000000000000"));
+        cases.add(new Case(0, MAX_UINT28, 0, 0, "000000000FVVVVU00000000000"));
+        cases.add(new Case(0, MAX_UINT28, 0, 0, "000000000fvvvvu00000000000"));
+        cases.add(new Case(0, 0, MAX_UINT24, 0, "000000000000001VVVVS000000"));
+        cases.add(new Case(0, 0, MAX_UINT24, 0, "000000000000001vvvvs000000"));
+        cases.add(new Case(0, 0, 0, MAX_UINT32, "00000000000000000003VVVVVV"));
+        cases.add(new Case(0, 0, 0, MAX_UINT32, "00000000000000000003vvvvvv"));
+        cases.add(new Case(MAX_UINT44, MAX_UINT28, MAX_UINT24, MAX_UINT32, "7VVVVVVVVVVVVVVVVVVVVVVVVV"));
+        cases.add(new Case(MAX_UINT44, MAX_UINT28, MAX_UINT24, MAX_UINT32, "7vvvvvvvvvvvvvvvvvvvvvvvvv"));
 
         for (Case e : cases) {
             Scru128Id fromFields = Scru128Id.fromFields(e.timestamp, e.counter, e.perSecRandom, e.perGenRandom);
@@ -91,24 +94,35 @@ class Scru128IdTests {
     }
 
     @Test
-    @DisplayName("Has symmetric converters from/to String, byte array, fields, and serialized form")
+    @DisplayName("Has symmetric converters from/to various values")
     void testSymmetricConverters() throws IOException, ClassNotFoundException {
+        ArrayList<Scru128Id> cases = new ArrayList<>();
+        cases.add(Scru128Id.fromFields(0, 0, 0, 0));
+        cases.add(Scru128Id.fromFields(MAX_UINT44, 0, 0, 0));
+        cases.add(Scru128Id.fromFields(0, MAX_UINT28, 0, 0));
+        cases.add(Scru128Id.fromFields(0, 0, MAX_UINT24, 0));
+        cases.add(Scru128Id.fromFields(0, 0, 0, MAX_UINT32));
+        cases.add(Scru128Id.fromFields(MAX_UINT44, MAX_UINT28, MAX_UINT24, MAX_UINT32));
+
         Scru128Generator g = new Scru128Generator();
         for (int i = 0; i < 1_000; i++) {
-            Scru128Id obj = g.generate();
-            assertEquals(obj, Scru128Id.fromString(obj.toString()));
-            assertEquals(obj, Scru128Id.fromByteArray(obj.toByteArray()));
-            assertEquals(obj, Scru128Id.fromFields(obj.getTimestamp(), obj.getCounter(), obj.getPerSecRandom(),
-                    obj.getPerGenRandom()));
+            cases.add(g.generate());
+        }
+
+        for (Scru128Id e : cases) {
+            assertEquals(e, Scru128Id.fromString(e.toString()));
+            assertEquals(e, Scru128Id.fromByteArray(e.toByteArray()));
+            assertEquals(e, Scru128Id.fromFields(e.getTimestamp(), e.getCounter(), e.getPerSecRandom(),
+                    e.getPerGenRandom()));
 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(bos);
-            oos.writeObject(obj);
+            oos.writeObject(e);
             oos.close();
             bos.close();
             ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
             ObjectInputStream ois = new ObjectInputStream(bis);
-            assertEquals(obj, ois.readObject());
+            assertEquals(e, ois.readObject());
             ois.close();
             bis.close();
         }
@@ -120,11 +134,11 @@ class Scru128IdTests {
         ArrayList<Scru128Id> ordered = new ArrayList<>();
         ordered.add(Scru128Id.fromFields(0, 0, 0, 0));
         ordered.add(Scru128Id.fromFields(0, 0, 0, 1));
-        ordered.add(Scru128Id.fromFields(0, 0, 0, 0xFFFF_FFFFL));
+        ordered.add(Scru128Id.fromFields(0, 0, 0, MAX_UINT32));
         ordered.add(Scru128Id.fromFields(0, 0, 1, 0));
-        ordered.add(Scru128Id.fromFields(0, 0, 0xFF_FFFF, 0));
+        ordered.add(Scru128Id.fromFields(0, 0, MAX_UINT24, 0));
         ordered.add(Scru128Id.fromFields(0, 1, 0, 0));
-        ordered.add(Scru128Id.fromFields(0, 0xFFF_FFFF, 0, 0));
+        ordered.add(Scru128Id.fromFields(0, MAX_UINT28, 0, 0));
         ordered.add(Scru128Id.fromFields(1, 0, 0, 0));
         ordered.add(Scru128Id.fromFields(2, 0, 0, 0));
 
