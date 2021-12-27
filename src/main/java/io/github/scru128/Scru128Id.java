@@ -6,7 +6,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 /**
  * Represents a SCRU128 ID and provides various converters and comparison operators.
@@ -98,9 +97,19 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
         return object;
     }
 
-    private static class ValidPatternLazyHolder {
-        static final @NotNull Pattern VALID_PATTERN = Pattern.compile("[0-7][0-9A-Va-v]{25}");
-    }
+    /**
+     * O(1) map from ASCII code points to base 32 digit values.
+     */
+    private static final @NotNull byte[] DECODE_MAP = new byte[]{
+            0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f,
+            0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f,
+            0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x00, 0x01, 0x02,
+            0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x0a, 0x0b, 0x0c,
+            0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d,
+            0x1e, 0x1f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e,
+            0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
+            0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f,
+    };
 
     /**
      * Creates an object from a 26-digit string representation.
@@ -111,16 +120,30 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
      */
     public static @NotNull Scru128Id fromString(@NotNull String strValue) {
         Objects.requireNonNull(strValue);
-        if (!ValidPatternLazyHolder.VALID_PATTERN.matcher(strValue).matches()) {
-            throw new IllegalArgumentException("invalid string representation: " + strValue);
+        if (strValue.length() != 26) {
+            throw new IllegalArgumentException("invalid string representation");
+        }
+
+        char c0 = strValue.charAt(0);
+        char c1 = strValue.charAt(1);
+        if (c0 > 'v' || DECODE_MAP[c0] > 7 || c1 > 'v' || DECODE_MAP[c1] == 0x7f) {
+            throw new IllegalArgumentException("invalid string representation");
         }
 
         Scru128Id object = new Scru128Id();
-        object.bytes[0] = (byte) Integer.parseInt(strValue.substring(0, 2), 32);
+        object.bytes[0] = (byte) (DECODE_MAP[c0] << 5 | DECODE_MAP[c1]);
 
         // process three 40-bit (5-byte / 8-digit) groups
         for (int i = 0; i < 3; i++) {
-            long buffer = Long.parseLong(strValue.substring(2 + i * 8, 10 + i * 8), 32);
+            long buffer = 0;
+            for (int j = 0; j < 8; j++) {
+                char c = strValue.charAt(2 + i * 8 + j);
+                if (c > 'v' || DECODE_MAP[c] == 0x7f) {
+                    throw new IllegalArgumentException("invalid string representation");
+                }
+                buffer <<= 5;
+                buffer |= DECODE_MAP[c];
+            }
             for (int j = 0; j < 5; j++) {
                 object.bytes[5 + i * 5 - j] = (byte) buffer;
                 buffer >>>= 8;
