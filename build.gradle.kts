@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.github.scru128"
-version = "0.7.2"
+version = "1.0.0"
 
 repositories {
     mavenCentral()

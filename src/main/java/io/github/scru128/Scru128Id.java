@@ -240,8 +240,8 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
     }
 
     /**
-     * Returns a negative integer, zero, and positive integer if the object is less than, equal to, and greater than
-     * the argument, respectively.
+     * Returns a negative integer, zero, or positive integer if the object is less than, equal to, or greater than the
+     * argument, respectively.
      */
     @Override
     public int compareTo(@NotNull Scru128Id other) {
