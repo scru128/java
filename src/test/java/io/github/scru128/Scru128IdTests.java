@@ -10,8 +10,7 @@ import java.util.ArrayList;
 import static org.junit.jupiter.api.Assertions.*;
 
 class Scru128IdTests {
-    static final long MAX_UINT44 = (1L << 44L) - 1L;
-    static final int MAX_UINT28 = (1 << 28) - 1;
+    static final long MAX_UINT48 = (1L << 48L) - 1L;
     static final int MAX_UINT24 = (1 << 24) - 1;
     static final long MAX_UINT32 = (1L << 32L) - 1L;
 
@@ -20,50 +19,50 @@ class Scru128IdTests {
     void testEncodeDecode() {
         class Case {
             final long timestamp;
-            final int counter;
-            final int perSecRandom;
-            final long perGenRandom;
+            final int counterHi;
+            final int counterLo;
+            final long entropy;
             final String string;
 
-            Case(long timestamp, int counter, int perSecRandom, long perGenRandom, String string) {
+            Case(long timestamp, int counterHi, int counterLo, long entropy, String string) {
                 this.timestamp = timestamp;
-                this.counter = counter;
-                this.perSecRandom = perSecRandom;
-                this.perGenRandom = perGenRandom;
+                this.counterHi = counterHi;
+                this.counterLo = counterLo;
+                this.entropy = entropy;
                 this.string = string;
             }
         }
 
         ArrayList<Case> cases = new ArrayList<>();
-        cases.add(new Case(0, 0, 0, 0, "00000000000000000000000000"));
-        cases.add(new Case(MAX_UINT44, 0, 0, 0, "7VVVVVVVVG0000000000000000"));
-        cases.add(new Case(MAX_UINT44, 0, 0, 0, "7vvvvvvvvg0000000000000000"));
-        cases.add(new Case(0, MAX_UINT28, 0, 0, "000000000FVVVVU00000000000"));
-        cases.add(new Case(0, MAX_UINT28, 0, 0, "000000000fvvvvu00000000000"));
-        cases.add(new Case(0, 0, MAX_UINT24, 0, "000000000000001VVVVS000000"));
-        cases.add(new Case(0, 0, MAX_UINT24, 0, "000000000000001vvvvs000000"));
-        cases.add(new Case(0, 0, 0, MAX_UINT32, "00000000000000000003VVVVVV"));
-        cases.add(new Case(0, 0, 0, MAX_UINT32, "00000000000000000003vvvvvv"));
-        cases.add(new Case(MAX_UINT44, MAX_UINT28, MAX_UINT24, MAX_UINT32, "7VVVVVVVVVVVVVVVVVVVVVVVVV"));
-        cases.add(new Case(MAX_UINT44, MAX_UINT28, MAX_UINT24, MAX_UINT32, "7vvvvvvvvvvvvvvvvvvvvvvvvv"));
+        cases.add(new Case(0, 0, 0, 0, "0000000000000000000000000"));
+        cases.add(new Case(MAX_UINT48, 0, 0, 0, "F5LXX1ZZ5K6TP71GEEH2DB7K0"));
+        cases.add(new Case(MAX_UINT48, 0, 0, 0, "f5lxx1zz5k6tp71geeh2db7k0"));
+        cases.add(new Case(0, MAX_UINT24, 0, 0, "0000000005GV2R2KJWR7N8XS0"));
+        cases.add(new Case(0, MAX_UINT24, 0, 0, "0000000005gv2r2kjwr7n8xs0"));
+        cases.add(new Case(0, 0, MAX_UINT24, 0, "00000000000000JPIA7QL4HS0"));
+        cases.add(new Case(0, 0, MAX_UINT24, 0, "00000000000000jpia7ql4hs0"));
+        cases.add(new Case(0, 0, 0, MAX_UINT32, "0000000000000000001Z141Z3"));
+        cases.add(new Case(0, 0, 0, MAX_UINT32, "0000000000000000001z141z3"));
+        cases.add(new Case(MAX_UINT48, MAX_UINT24, MAX_UINT24, MAX_UINT32, "F5LXX1ZZ5PNORYNQGLHZMSP33"));
+        cases.add(new Case(MAX_UINT48, MAX_UINT24, MAX_UINT24, MAX_UINT32, "f5lxx1zz5pnorynqglhzmsp33"));
 
         for (Case e : cases) {
-            Scru128Id fromFields = Scru128Id.fromFields(e.timestamp, e.counter, e.perSecRandom, e.perGenRandom);
+            Scru128Id fromFields = Scru128Id.fromFields(e.timestamp, e.counterHi, e.counterLo, e.entropy);
             Scru128Id fromString = Scru128Id.fromString(e.string);
 
             assertEquals(fromFields, fromString);
-            assertEquals(new BigInteger(e.string, 32), new BigInteger(1, fromFields.toByteArray()));
-            assertEquals(new BigInteger(e.string, 32), new BigInteger(1, fromString.toByteArray()));
+            assertEquals(new BigInteger(e.string, 36), new BigInteger(1, fromFields.toByteArray()));
+            assertEquals(new BigInteger(e.string, 36), new BigInteger(1, fromString.toByteArray()));
             assertEquals(e.string.toUpperCase(), fromFields.toString());
             assertEquals(e.string.toUpperCase(), fromString.toString());
             assertEquals(e.timestamp, fromFields.getTimestamp());
             assertEquals(e.timestamp, fromString.getTimestamp());
-            assertEquals(e.counter, fromFields.getCounter());
-            assertEquals(e.counter, fromString.getCounter());
-            assertEquals(e.perSecRandom, fromFields.getPerSecRandom());
-            assertEquals(e.perSecRandom, fromString.getPerSecRandom());
-            assertEquals(e.perGenRandom, fromFields.getPerGenRandom());
-            assertEquals(e.perGenRandom, fromString.getPerGenRandom());
+            assertEquals(e.counterHi, fromFields.getCounterHi());
+            assertEquals(e.counterHi, fromString.getCounterHi());
+            assertEquals(e.counterLo, fromFields.getCounterLo());
+            assertEquals(e.counterLo, fromString.getCounterLo());
+            assertEquals(e.entropy, fromFields.getEntropy());
+            assertEquals(e.entropy, fromString.getEntropy());
         }
     }
 
@@ -72,19 +71,18 @@ class Scru128IdTests {
     void testStringValidation() {
         ArrayList<String> cases = new ArrayList<>();
         cases.add("");
-        cases.add(" 00SCT4FL89GQPRHN44C4LFM0OV");
-        cases.add("00SCT4FL89GQPRJN44C7SQO381 ");
-        cases.add(" 00SCT4FL89GQPRLN44C4BGCIIO ");
-        cases.add("+00SCT4FL89GQPRNN44C4F3QD24");
-        cases.add("-00SCT4FL89GQPRPN44C7H4E5RC");
-        cases.add("+0SCT4FL89GQPRRN44C55Q7RVC");
-        cases.add("-0SCT4FL89GQPRTN44C6PN0A2R");
-        cases.add("00SCT4FL89WQPRVN44C41RGVMM");
-        cases.add("00SCT4FL89GQPS1N4_C54QDC5O");
-        cases.add("00SCT4-L89GQPS3N44C602O0K8");
-        cases.add("00SCT4FL89GQPS N44C7VHS5QJ");
-        cases.add("80000000000000000000000000");
-        cases.add("VVVVVVVVVVVVVVVVVVVVVVVVVV");
+        cases.add(" 036Z8PUQ4TSXSIGK6O19Y164Q");
+        cases.add("036Z8PUQ54QNY1VQ3HCBRKWEB ");
+        cases.add(" 036Z8PUQ54QNY1VQ3HELIVWAX ");
+        cases.add("+036Z8PUQ54QNY1VQ3HFCV3SS0");
+        cases.add("-036Z8PUQ54QNY1VQ3HHY8U1CH");
+        cases.add("+36Z8PUQ54QNY1VQ3HJQ48D9P");
+        cases.add("-36Z8PUQ5A7J0TI08OZ6ZDRDY");
+        cases.add("036Z8PUQ5A7J0T_08P2CDZ28V");
+        cases.add("036Z8PU-5A7J0TI08P3OL8OOL");
+        cases.add("036Z8PUQ5A7J0TI08P4J 6CYA");
+        cases.add("F5LXX1ZZ5PNORYNQGLHZMSP34");
+        cases.add("ZZZZZZZZZZZZZZZZZZZZZZZZZ");
 
         for (String e : cases) {
             assertThrows(IllegalArgumentException.class, () -> {
@@ -98,11 +96,11 @@ class Scru128IdTests {
     void testSymmetricConverters() throws IOException, ClassNotFoundException {
         ArrayList<Scru128Id> cases = new ArrayList<>();
         cases.add(Scru128Id.fromFields(0, 0, 0, 0));
-        cases.add(Scru128Id.fromFields(MAX_UINT44, 0, 0, 0));
-        cases.add(Scru128Id.fromFields(0, MAX_UINT28, 0, 0));
+        cases.add(Scru128Id.fromFields(MAX_UINT48, 0, 0, 0));
+        cases.add(Scru128Id.fromFields(0, MAX_UINT24, 0, 0));
         cases.add(Scru128Id.fromFields(0, 0, MAX_UINT24, 0));
         cases.add(Scru128Id.fromFields(0, 0, 0, MAX_UINT32));
-        cases.add(Scru128Id.fromFields(MAX_UINT44, MAX_UINT28, MAX_UINT24, MAX_UINT32));
+        cases.add(Scru128Id.fromFields(MAX_UINT48, MAX_UINT24, MAX_UINT24, MAX_UINT32));
 
         Scru128Generator g = new Scru128Generator();
         for (int i = 0; i < 1_000; i++) {
@@ -112,8 +110,7 @@ class Scru128IdTests {
         for (Scru128Id e : cases) {
             assertEquals(e, Scru128Id.fromString(e.toString()));
             assertEquals(e, Scru128Id.fromByteArray(e.toByteArray()));
-            assertEquals(e, Scru128Id.fromFields(e.getTimestamp(), e.getCounter(), e.getPerSecRandom(),
-                    e.getPerGenRandom()));
+            assertEquals(e, Scru128Id.fromFields(e.getTimestamp(), e.getCounterHi(), e.getCounterLo(), e.getEntropy()));
 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(bos);
@@ -138,7 +135,7 @@ class Scru128IdTests {
         ordered.add(Scru128Id.fromFields(0, 0, 1, 0));
         ordered.add(Scru128Id.fromFields(0, 0, MAX_UINT24, 0));
         ordered.add(Scru128Id.fromFields(0, 1, 0, 0));
-        ordered.add(Scru128Id.fromFields(0, MAX_UINT28, 0, 0));
+        ordered.add(Scru128Id.fromFields(0, MAX_UINT24, 0, 0));
         ordered.add(Scru128Id.fromFields(1, 0, 0, 0));
         ordered.add(Scru128Id.fromFields(2, 0, 0, 0));
 

@@ -22,9 +22,9 @@ class Scru128Tests {
     }
 
     @Test
-    @DisplayName("Generates 26-digit canonical string")
+    @DisplayName("Generates 25-digit canonical string")
     void testFormat() {
-        Pattern pattern = Pattern.compile("^[0-7][0-9A-V]{25}$");
+        Pattern pattern = Pattern.compile("^[0-9A-Z]{25}$");
         for (String e : SAMPLES) {
             assertTrue(pattern.matcher(e).matches());
         }
@@ -50,27 +50,30 @@ class Scru128Tests {
     void testTimestamp() {
         Scru128Generator g = new Scru128Generator();
         for (int i = 0; i < 10_000; i++) {
-            long tsNow = System.currentTimeMillis() - 1577836800_000L;
+            long tsNow = System.currentTimeMillis();
             long timestamp = g.generate().getTimestamp();
             assertTrue(Math.abs(tsNow - timestamp) < 16);
         }
     }
 
     @Test
-    @DisplayName("Encodes unique sortable pair of timestamp and counter")
-    void testTimestampAndCounter() {
+    @DisplayName("Encodes unique sortable tuple of timestamp and counters")
+    void testTimestampAndCounters() {
         Scru128Id prev = Scru128Id.fromString(SAMPLES.get(0));
         for (int i = 1; i < SAMPLES.size(); i++) {
             Scru128Id curr = Scru128Id.fromString(SAMPLES.get(i));
             assertTrue(prev.getTimestamp() < curr.getTimestamp() ||
                     (prev.getTimestamp() == curr.getTimestamp() &&
-                            prev.getCounter() < curr.getCounter()));
+                            prev.getCounterHi() < curr.getCounterHi()) ||
+                    (prev.getTimestamp() == curr.getTimestamp() &&
+                            prev.getCounterHi() == curr.getCounterHi() &&
+                            prev.getCounterLo() < curr.getCounterLo()));
             prev = curr;
         }
     }
 
     @Test
-    @DisplayName("Generates no IDs sharing same timestamp and counter under multithreading")
+    @DisplayName("Generates no IDs sharing same timestamp and counters under multithreading")
     void testThreading() throws InterruptedException {
         ArrayList<Scru128Id> queue = new ArrayList<>();
         ArrayList<Thread> producers = new ArrayList<>();
@@ -93,7 +96,7 @@ class Scru128Tests {
 
         HashSet<String> set = new HashSet<>();
         for (Scru128Id e : queue) {
-            set.add(String.format("%011x-%07x", e.getTimestamp(), e.getCounter()));
+            set.add(String.format("%012x-%06x-%06x", e.getTimestamp(), e.getCounterHi(), e.getCounterLo()));
         }
 
         assertEquals(4 * 10_000, set.size());

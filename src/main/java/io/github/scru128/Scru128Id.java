@@ -8,13 +8,13 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * Represents a SCRU128 ID and provides various converters and comparison operators.
+ * Represents a SCRU128 ID and provides converters and comparison operators.
  * <p>
  * This class is designed to be an immutable data class, and thus the reference to an object can be safely copied and
  * shared by multiple variables without calling the clone() method.
  */
 public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializable {
-    private static final long serialVersionUID = 3;
+    private static final long serialVersionUID = 4;
 
     /**
      * Internal 128-bit byte array representation.
@@ -58,47 +58,47 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
     /**
      * Creates an object from field values.
      *
-     * @param timestamp    44-bit millisecond timestamp field value.
-     * @param counter      28-bit per-timestamp monotonic counter field value.
-     * @param perSecRandom 24-bit per-second randomness field value.
-     * @param perGenRandom 32-bit per-generation randomness field value.
+     * @param timestamp - 48-bit timestamp field value.
+     * @param counterHi - 24-bit counter_hi field value.
+     * @param counterLo - 24-bit counter_lo field value.
+     * @param entropy   - 32-bit entropy field value.
      * @return new object.
      * @throws IllegalArgumentException if any argument is out of the value range of the field.
      */
-    public static @NotNull Scru128Id fromFields(long timestamp, int counter, int perSecRandom, long perGenRandom) {
+    public static @NotNull Scru128Id fromFields(long timestamp, int counterHi, int counterLo, long entropy) {
         if (timestamp < 0 ||
-                counter < 0 ||
-                perSecRandom < 0 ||
-                perGenRandom < 0 ||
-                timestamp > 0xFFF_FFFF_FFFFL ||
-                counter > Scru128.MAX_COUNTER ||
-                perSecRandom > Scru128.MAX_PER_SEC_RANDOM ||
-                perGenRandom > 0xFFFF_FFFFL) {
+                counterHi < 0 ||
+                counterLo < 0 ||
+                entropy < 0 ||
+                timestamp > 0xffff_ffff_ffffL ||
+                counterHi > Scru128.MAX_COUNTER_HI ||
+                counterLo > Scru128.MAX_COUNTER_LO ||
+                entropy > 0xffff_ffffL) {
             throw new IllegalArgumentException("invalid field value");
         }
 
         Scru128Id object = new Scru128Id();
-        object.bytes[0] = (byte) (timestamp >>> 36);
-        object.bytes[1] = (byte) (timestamp >>> 28);
-        object.bytes[2] = (byte) (timestamp >>> 20);
-        object.bytes[3] = (byte) (timestamp >>> 12);
-        object.bytes[4] = (byte) (timestamp >>> 4);
-        object.bytes[5] = (byte) (timestamp << 4 | counter >>> 24);
-        object.bytes[6] = (byte) (counter >>> 16);
-        object.bytes[7] = (byte) (counter >>> 8);
-        object.bytes[8] = (byte) counter;
-        object.bytes[9] = (byte) (perSecRandom >>> 16);
-        object.bytes[10] = (byte) (perSecRandom >>> 8);
-        object.bytes[11] = (byte) perSecRandom;
-        object.bytes[12] = (byte) (perGenRandom >>> 24);
-        object.bytes[13] = (byte) (perGenRandom >>> 16);
-        object.bytes[14] = (byte) (perGenRandom >>> 8);
-        object.bytes[15] = (byte) perGenRandom;
+        object.bytes[0] = (byte) (timestamp >>> 40);
+        object.bytes[1] = (byte) (timestamp >>> 32);
+        object.bytes[2] = (byte) (timestamp >>> 24);
+        object.bytes[3] = (byte) (timestamp >>> 16);
+        object.bytes[4] = (byte) (timestamp >>> 8);
+        object.bytes[5] = (byte) timestamp;
+        object.bytes[6] = (byte) (counterHi >>> 16);
+        object.bytes[7] = (byte) (counterHi >>> 8);
+        object.bytes[8] = (byte) counterHi;
+        object.bytes[9] = (byte) (counterLo >>> 16);
+        object.bytes[10] = (byte) (counterLo >>> 8);
+        object.bytes[11] = (byte) counterLo;
+        object.bytes[12] = (byte) (entropy >>> 24);
+        object.bytes[13] = (byte) (entropy >>> 16);
+        object.bytes[14] = (byte) (entropy >>> 8);
+        object.bytes[15] = (byte) entropy;
         return object;
     }
 
     /**
-     * O(1) map from ASCII code points to base 32 digit values.
+     * O(1) map from ASCII code points to Base36 digit values.
      */
     private static final @NotNull byte[] DECODE_MAP = new byte[]{
             0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f,
@@ -106,50 +106,55 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
             0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x00, 0x01, 0x02,
             0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x0a, 0x0b, 0x0c,
             0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d,
-            0x1e, 0x1f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e,
+            0x1e, 0x1f, 0x20, 0x21, 0x22, 0x23, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e,
             0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
-            0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f,
+            0x20, 0x21, 0x22, 0x23, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f,
     };
 
     /**
-     * Creates an object from a 26-digit string representation.
+     * Creates an object from a 25-digit string representation.
      *
-     * @param strValue 26-digit string representation.
+     * @param strValue 25-digit string representation.
      * @return new object.
      * @throws IllegalArgumentException if the argument is not a valid string representation.
      */
     public static @NotNull Scru128Id fromString(@NotNull String strValue) {
         Objects.requireNonNull(strValue);
-        if (strValue.length() != 26) {
-            throw new IllegalArgumentException("invalid string representation");
+        if (strValue.length() != 25) {
+            throw new IllegalArgumentException("invalid length");
         }
 
-        char c0 = strValue.charAt(0);
-        char c1 = strValue.charAt(1);
-        if (c0 > 'v' || DECODE_MAP[c0] > 7 || c1 > 'v' || DECODE_MAP[c1] == 0x7f) {
-            throw new IllegalArgumentException("invalid string representation");
+        byte[] src = new byte[25];
+        for (int i = 0; i < 25; i++) {
+            char c = strValue.charAt(i);
+            if (c > 'z' || DECODE_MAP[c] == 0x7f) {
+                throw new IllegalArgumentException("invalid digit");
+            }
+            src[i] = DECODE_MAP[c];
         }
 
-        Scru128Id object = new Scru128Id();
-        object.bytes[0] = (byte) (DECODE_MAP[c0] << 5 | DECODE_MAP[c1]);
+        Scru128Id dst = new Scru128Id();
+        int minIndex = 99; // any number greater than size of output array
+        for (int i = -2; i < 25; i += 9) {
+            // implement Base36 using 9-digit words
+            long carry = 0;
+            for (int j = i < 0 ? 0 : i; j < i + 9; j++) {
+                carry = (carry * 36) + src[j];
+            }
 
-        // process three 40-bit (5-byte / 8-digit) groups
-        for (int i = 0; i < 3; i++) {
-            long buffer = 0;
-            for (int j = 0; j < 8; j++) {
-                char c = strValue.charAt(2 + i * 8 + j);
-                if (c > 'v' || DECODE_MAP[c] == 0x7f) {
-                    throw new IllegalArgumentException("invalid string representation");
+            // iterate over output array from right to left while carry != 0 but at least up to place already filled
+            int j = dst.bytes.length - 1;
+            for (; carry > 0 || j > minIndex; j--) {
+                if (j < 0) {
+                    throw new IllegalArgumentException("out of 128-bit value range");
                 }
-                buffer <<= 5;
-                buffer |= DECODE_MAP[c];
+                carry += (0xffL & dst.bytes[j]) * 101559956668416L; // 36^9
+                dst.bytes[j] = (byte) carry;
+                carry = carry >>> 8;
             }
-            for (int j = 0; j < 5; j++) {
-                object.bytes[5 + i * 5 - j] = (byte) buffer;
-                buffer >>>= 8;
-            }
+            minIndex = j;
         }
-        return object;
+        return dst;
     }
 
     /**
@@ -163,62 +168,70 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
     }
 
     /**
-     * Returns the 44-bit millisecond timestamp field value.
+     * Returns the 48-bit timestamp field value.
      *
-     * @return 44-bit unsigned integer.
+     * @return 48-bit unsigned integer.
      */
     public long getTimestamp() {
-        return subLong(0, 6) >>> 4;
+        return subLong(0, 6);
     }
 
     /**
-     * Returns the 28-bit per-timestamp monotonic counter field value.
-     *
-     * @return 28-bit unsigned integer.
-     */
-    public int getCounter() {
-        return (int) (subLong(5, 9) & Scru128.MAX_COUNTER);
-    }
-
-    /**
-     * Returns the 24-bit per-second randomness field value.
+     * Returns the 24-bit counter_hi field value.
      *
      * @return 24-bit unsigned integer.
      */
-    public int getPerSecRandom() {
+    public int getCounterHi() {
+        return (int) subLong(6, 9);
+    }
+
+    /**
+     * Returns the 24-bit counter_lo field value.
+     *
+     * @return 24-bit unsigned integer.
+     */
+    public int getCounterLo() {
         return (int) subLong(9, 12);
     }
 
     /**
-     * Returns the 32-bit per-generation randomness field value.
+     * Returns the 32-bit entropy field value.
      *
      * @return 32-bit unsigned integer.
      */
-    public long getPerGenRandom() {
+    public long getEntropy() {
         return subLong(12, 16);
     }
 
     /**
-     * Digit characters used in the base 32 notation.
+     * Digit characters used in the Base36 notation.
      */
-    private static final @NotNull char[] DIGITS = "0123456789ABCDEFGHIJKLMNOPQRSTUV".toCharArray();
+    private static final @NotNull char[] DIGITS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
 
     /**
-     * Returns the 26-digit canonical string representation.
+     * Returns the 25-digit canonical string representation.
      */
     @Override
     public @NotNull String toString() {
-        char[] chars = new char[26];
-        chars[0] = DIGITS[(0xFF & bytes[0]) >>> 5];
-        chars[1] = DIGITS[bytes[0] & 31];
+        byte[] dst = new byte[25];
+        int minIndex = 99; // any number greater than size of output array
+        for (int i = -2; i < 16; i += 6) {
+            // implement Base36 using 48-bit words
+            long carry = subLong(i < 0 ? 0 : i, i + 6);
 
-        // process three 40-bit (5-byte / 8-digit) groups
-        for (int i = 0; i < 3; i++) {
-            long buffer = subLong(1 + i * 5, 6 + i * 5);
-            for (int j = 0; j < 8; j++) {
-                chars[9 + i * 8 - j] = DIGITS[(int) (buffer & 31)];
-                buffer >>>= 5;
+            // iterate over output array from right to left while carry != 0 but at least up to place already filled
+            int j = dst.length - 1;
+            for (; carry > 0 || j > minIndex; j--) {
+                carry += (0xffL & dst[j]) << 48;
+                dst[j] = (byte) (carry % 36);
+                carry = carry / 36;
             }
+            minIndex = j;
+        }
+
+        char[] chars = new char[25];
+        for (int i = 0; i < 25; i++) {
+            chars[i] = DIGITS[dst[i]];
         }
         return String.valueOf(chars);
     }
@@ -248,7 +261,7 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
         Objects.requireNonNull(other);
         for (int i = 0; i < bytes.length; i++) {
             if (bytes[i] != other.bytes[i]) {
-                return Integer.compare(0xFF & bytes[i], 0xFF & other.bytes[i]);
+                return Integer.compare(0xff & bytes[i], 0xff & other.bytes[i]);
             }
         }
         return 0;
@@ -262,8 +275,7 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
     private long subLong(int beginIndex, int endIndex) {
         long buffer = 0;
         while (beginIndex < endIndex) {
-            buffer <<= 8;
-            buffer |= 0xFFL & bytes[beginIndex++];
+            buffer = (buffer << 8) | (0xffL & bytes[beginIndex++]);
         }
         return buffer;
     }
