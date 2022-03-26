@@ -88,7 +88,7 @@ public class Scru128Generator {
     /**
      * Defines the behavior on counter overflow.
      * <p>
-     * Currently, this method busy-waits for the next clock tick and, if the clock does not move forward for a while,
+     * Currently, this method waits for the next clock tick and, if the clock does not move forward for a while,
      * reinitializes the generator state.
      */
     private void handleCounterOverflow() {
@@ -96,7 +96,13 @@ public class Scru128Generator {
             logger.warn("counter overflowing; will wait for next clock tick");
         }
         tsCounterHi = 0;
-        for (int i = 0; i < 1_000_000; i++) {
+        for (int i = 0; i < 10_000; i++) {
+            try {
+                Thread.sleep(0, 100 * 1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
             if (System.currentTimeMillis() > timestamp) {
                 return;
             }
