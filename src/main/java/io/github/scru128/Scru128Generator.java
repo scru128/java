@@ -54,13 +54,22 @@ public class Scru128Generator {
      * @return new SCRU128 ID object.
      */
     public synchronized @NotNull Scru128Id generate() {
-        return generateThreadUnsafe();
+        while (true) {
+            try {
+                return generateCore();
+            } catch (CounterOverflowError e) {
+                handleCounterOverflow();
+            }
+        }
     }
 
     /**
-     * Generates a new SCRU128 ID object without overhead for thread safety.
+     * Generates a new SCRU128 ID object, while delegating the caller to take care of thread safety and counter
+     * overflows.
+     *
+     * @throws CounterOverflowError when the counter_hi and counter_lo fields can no more be incremented.
      */
-    private @NotNull Scru128Id generateThreadUnsafe() {
+    private @NotNull Scru128Id generateCore() throws CounterOverflowError {
         long ts = System.currentTimeMillis();
         if (ts > timestamp) {
             timestamp = ts;
@@ -76,8 +85,7 @@ public class Scru128Generator {
                 counterHi++;
                 if (counterHi > Scru128.MAX_COUNTER_HI) {
                     counterHi = 0;
-                    handleCounterOverflow();
-                    return generateThreadUnsafe();
+                    throw new CounterOverflowError();
                 }
             }
         }
@@ -113,7 +121,6 @@ public class Scru128Generator {
         timestamp = 0;
     }
 
-
     /**
      * Defines the logger interface used by the generator.
      */
@@ -136,4 +143,10 @@ public class Scru128Generator {
     public void setLogger(@NotNull Scru128Generator.Logger logger) {
         this.logger = Objects.requireNonNull(logger);
     }
+}
+
+/**
+ * Error thrown when the monotonic counters can no more be incremented.
+ */
+class CounterOverflowError extends Exception {
 }
