@@ -135,10 +135,10 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
 
         Scru128Id dst = new Scru128Id();
         int minIndex = 99; // any number greater than size of output array
-        for (int i = -2; i < 25; i += 9) {
-            // implement Base36 using 9-digit words
+        for (int i = -5; i < 25; i += 10) {
+            // implement Base36 using 10-digit words
             long carry = 0;
-            for (int j = i < 0 ? 0 : i; j < i + 9; j++) {
+            for (int j = i < 0 ? 0 : i; j < i + 10; j++) {
                 carry = (carry * 36) + src[j];
             }
 
@@ -148,7 +148,7 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
                 if (j < 0) {
                     throw new IllegalArgumentException("out of 128-bit value range");
                 }
-                carry += (0xffL & dst.bytes[j]) * 101559956668416L; // 36^9
+                carry += (0xffL & dst.bytes[j]) * 3656158440062976L; // 36^10
                 dst.bytes[j] = (byte) carry;
                 carry = carry >>> 8;
             }
@@ -215,14 +215,14 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
     public @NotNull String toString() {
         byte[] dst = new byte[25];
         int minIndex = 99; // any number greater than size of output array
-        for (int i = -2; i < 16; i += 6) {
-            // implement Base36 using 48-bit words
-            long carry = subLong(i < 0 ? 0 : i, i + 6);
+        for (int i = -5; i < 16; i += 7) {
+            // implement Base36 using 56-bit words
+            long carry = subLong(i < 0 ? 0 : i, i + 7);
 
             // iterate over output array from right to left while carry != 0 but at least up to place already filled
             int j = dst.length - 1;
             for (; carry > 0 || j > minIndex; j--) {
-                carry += (0xffL & dst[j]) << 48;
+                carry += (0xffL & dst[j]) << 56;
                 dst[j] = (byte) (carry % 36);
                 carry = carry / 36;
             }
