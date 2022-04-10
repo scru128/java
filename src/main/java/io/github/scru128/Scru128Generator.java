@@ -1,7 +1,6 @@
 package io.github.scru128;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.security.SecureRandom;
 import java.util.Objects;
@@ -24,11 +23,6 @@ public class Scru128Generator {
      * Random number generator used by the generator.
      */
     private final @NotNull Random random;
-
-    /**
-     * Logger object used by the generator.
-     */
-    private @Nullable Scru128Generator.Logger logger;
 
     /**
      * Creates a generator object with the default random number generator.
@@ -54,99 +48,41 @@ public class Scru128Generator {
      * @return new SCRU128 ID object.
      */
     public synchronized @NotNull Scru128Id generate() {
-        while (true) {
-            try {
-                return generateCore();
-            } catch (CounterOverflowError e) {
-                handleCounterOverflow();
-            }
-        }
+        return generateThreadUnsafe();
     }
 
     /**
-     * Generates a new SCRU128 ID object, while delegating the caller to take care of thread safety and counter
-     * overflows.
-     *
-     * @throws CounterOverflowError when the counter_hi and counter_lo fields can no more be incremented.
+     * Generates a new SCRU128 ID object without overhead for thread safety.
      */
-    private @NotNull Scru128Id generateCore() throws CounterOverflowError {
+    private @NotNull Scru128Id generateThreadUnsafe() {
         long ts = System.currentTimeMillis();
         if (ts > timestamp) {
             timestamp = ts;
             counterLo = random.nextInt() & Scru128.MAX_COUNTER_LO;
-            if (ts - tsCounterHi >= 1000) {
-                tsCounterHi = ts;
-                counterHi = random.nextInt() & Scru128.MAX_COUNTER_HI;
-            }
-        } else {
+        } else if (ts + 10000 > timestamp) {
             counterLo++;
             if (counterLo > Scru128.MAX_COUNTER_LO) {
                 counterLo = 0;
                 counterHi++;
                 if (counterHi > Scru128.MAX_COUNTER_HI) {
                     counterHi = 0;
-                    throw new CounterOverflowError();
+                    // increment timestamp at counter overflow
+                    timestamp++;
+                    counterLo = random.nextInt() & Scru128.MAX_COUNTER_LO;
                 }
             }
+        } else {
+            // reset state if clock moves back more than ten seconds
+            tsCounterHi = 0;
+            timestamp = ts;
+            counterLo = random.nextInt() & Scru128.MAX_COUNTER_LO;
+        }
+
+        if (timestamp - tsCounterHi >= 1000) {
+            tsCounterHi = timestamp;
+            counterHi = random.nextInt() & Scru128.MAX_COUNTER_HI;
         }
 
         return Scru128Id.fromFields(timestamp, counterHi, counterLo, 0xffff_ffffL & random.nextInt());
     }
-
-    /**
-     * Defines the behavior on counter overflow.
-     * <p>
-     * Currently, this method waits for the next clock tick and, if the clock does not move forward for a while,
-     * reinitializes the generator state.
-     */
-    private void handleCounterOverflow() {
-        if (logger != null) {
-            logger.warn("counter overflowing; will wait for next clock tick");
-        }
-        tsCounterHi = 0;
-        for (int i = 0; i < 10_000; i++) {
-            try {
-                Thread.sleep(0, 100 * 1000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
-            }
-            if (System.currentTimeMillis() > timestamp) {
-                return;
-            }
-        }
-        if (logger != null) {
-            logger.warn("reset state as clock did not move for a while");
-        }
-        timestamp = 0;
-    }
-
-    /**
-     * Defines the logger interface used by the generator.
-     */
-    public interface Logger {
-        /**
-         * Logs message at WARNING level.
-         *
-         * @param message message.
-         */
-        void warn(@NotNull String message);
-    }
-
-    /**
-     * Specifies the logger object used by the generator.
-     * <p>
-     * Logging is disabled by default. Set a logger object to enable logging.
-     *
-     * @param logger new logger.
-     */
-    public void setLogger(@NotNull Scru128Generator.Logger logger) {
-        this.logger = Objects.requireNonNull(logger);
-    }
-}
-
-/**
- * Error thrown when the monotonic counters can no more be incremented.
- */
-class CounterOverflowError extends Exception {
 }
