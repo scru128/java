@@ -3,37 +3,25 @@ package io.github.scru128;
 import org.jetbrains.annotations.NotNull;
 
 import java.security.SecureRandom;
+import java.util.Objects;
 import java.util.Random;
 
 /**
- * Represents a SCRU128 ID generator that encapsulates the monotonic counter and other internal states.
+ * Represents a SCRU128 ID generator that encapsulates the monotonic counters and other internal states.
  */
 public class Scru128Generator {
-    /**
-     * Timestamp at last generation.
-     */
-    private long tsLastGen = 0;
+    private long timestamp = 0;
+    private int counterHi = 0;
+    private int counterLo = 0;
 
     /**
-     * Counter at last generation.
+     * Timestamp at the last renewal of counter_hi field.
      */
-    private int counter = 0;
+    private long tsCounterHi = 0;
 
     /**
-     * Timestamp at last renewal of perSecRandom.
+     * Random number generator used by the generator.
      */
-    private long tsLastSec = 0;
-
-    /**
-     * Per-second random value at last generation.
-     */
-    private int perSecRandom = 0;
-
-    /**
-     * Maximum number of checking the system clock until it goes forward.
-     */
-    private final int nClockCheckMax = 1_000_000;
-
     private final @NotNull Random random;
 
     /**
@@ -49,7 +37,7 @@ public class Scru128Generator {
      * @param random random number generator (should be cryptographically strong and securely seeded).
      */
     public Scru128Generator(@NotNull Random random) {
-        this.random = random;
+        this.random = Objects.requireNonNull(random);
     }
 
     /**
@@ -67,42 +55,34 @@ public class Scru128Generator {
      * Generates a new SCRU128 ID object without overhead for thread safety.
      */
     private @NotNull Scru128Id generateThreadUnsafe() {
-        // update timestamp and counter
-        long tsNow = System.currentTimeMillis();
-        if (tsNow > tsLastGen) {
-            tsLastGen = tsNow;
-            counter = random.nextInt() & Scru128.MAX_COUNTER;
-        } else if (++counter > Scru128.MAX_COUNTER) {
-            if (Scru128.logger != null) {
-                Scru128.logger.info("counter limit reached; will wait until clock goes forward");
-            }
-            int nClockCheck = 0;
-            while (tsNow <= tsLastGen) {
-                tsNow = System.currentTimeMillis();
-                if (++nClockCheck > nClockCheckMax) {
-                    if (Scru128.logger != null) {
-                        Scru128.logger.warn("reset state as clock did not go forward");
-                    }
-                    tsLastSec = 0;
-                    break;
+        long ts = System.currentTimeMillis();
+        if (ts > timestamp) {
+            timestamp = ts;
+            counterLo = random.nextInt() & Scru128.MAX_COUNTER_LO;
+        } else if (ts + 10000 > timestamp) {
+            counterLo++;
+            if (counterLo > Scru128.MAX_COUNTER_LO) {
+                counterLo = 0;
+                counterHi++;
+                if (counterHi > Scru128.MAX_COUNTER_HI) {
+                    counterHi = 0;
+                    // increment timestamp at counter overflow
+                    timestamp++;
+                    counterLo = random.nextInt() & Scru128.MAX_COUNTER_LO;
                 }
             }
-
-            tsLastGen = tsNow;
-            counter = random.nextInt() & Scru128.MAX_COUNTER;
+        } else {
+            // reset state if clock moves back more than ten seconds
+            tsCounterHi = 0;
+            timestamp = ts;
+            counterLo = random.nextInt() & Scru128.MAX_COUNTER_LO;
         }
 
-        // update perSecRandom
-        if (tsLastGen - tsLastSec > 1_000) {
-            tsLastSec = tsLastGen;
-            perSecRandom = random.nextInt() & Scru128.MAX_PER_SEC_RANDOM;
+        if (timestamp - tsCounterHi >= 1000) {
+            tsCounterHi = timestamp;
+            counterHi = random.nextInt() & Scru128.MAX_COUNTER_HI;
         }
 
-        return Scru128Id.fromFields(
-                tsNow - Scru128.TIMESTAMP_BIAS,
-                counter,
-                perSecRandom,
-                0xFFFF_FFFFL & random.nextInt()
-        );
+        return Scru128Id.fromFields(timestamp, counterHi, counterLo, 0xffff_ffffL & random.nextInt());
     }
 }
