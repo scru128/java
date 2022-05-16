@@ -20,6 +20,11 @@ public class Scru128Generator {
     private long tsCounterHi = 0;
 
     /**
+     * Status code reported at the last generation.
+     */
+    private @NotNull Status lastStatus = Status.NOT_EXECUTED;
+
+    /**
      * Random number generator used by the generator.
      */
     private final @NotNull Random random;
@@ -48,7 +53,7 @@ public class Scru128Generator {
      * @return new SCRU128 ID object.
      */
     public synchronized @NotNull Scru128Id generate() {
-        return generateCore(System.currentTimeMillis()).value;
+        return generateCore(System.currentTimeMillis());
     }
 
     /**
@@ -56,37 +61,33 @@ public class Scru128Generator {
      * <p>
      * Unlike {@link #generate()}, this method is NOT thread-safe. The generator object should be protected from
      * concurrent accesses using a mutex or other synchronization mechanism to avoid race conditions.
-     * <p>
-     * This method returns a generated ID and a {@link Status} code that indicates the internal state involved in the
-     * generation. Callers can usually ignore the status unless the monotonic order of generated IDs is critically
-     * important.
      *
      * @param timestamp 48-bit timestamp field value.
      * @return new SCRU128 ID object.
      * @throws IllegalArgumentException if the argument is not a 48-bit unsigned integer.
      */
-    public @NotNull Result generateCore(long timestamp) {
+    public @NotNull Scru128Id generateCore(long timestamp) {
         if (timestamp < 0 || timestamp > Scru128.MAX_TIMESTAMP) {
             throw new IllegalArgumentException("`timestamp` must be a 48-bit unsigned integer");
         }
 
-        Status status = Status.NEW_TIMESTAMP;
+        lastStatus = Status.NEW_TIMESTAMP;
         if (timestamp > this.timestamp) {
             this.timestamp = timestamp;
             counterLo = random.nextInt() & Scru128.MAX_COUNTER_LO;
         } else if (timestamp + 10000 > this.timestamp) {
             counterLo++;
-            status = Status.COUNTER_LO_INC;
+            lastStatus = Status.COUNTER_LO_INC;
             if (counterLo > Scru128.MAX_COUNTER_LO) {
                 counterLo = 0;
                 counterHi++;
-                status = Status.COUNTER_HI_INC;
+                lastStatus = Status.COUNTER_HI_INC;
                 if (counterHi > Scru128.MAX_COUNTER_HI) {
                     counterHi = 0;
                     // increment timestamp at counter overflow
                     this.timestamp++;
                     counterLo = random.nextInt() & Scru128.MAX_COUNTER_LO;
-                    status = Status.TIMESTAMP_INC;
+                    lastStatus = Status.TIMESTAMP_INC;
                 }
             }
         } else {
@@ -94,7 +95,7 @@ public class Scru128Generator {
             tsCounterHi = 0;
             this.timestamp = timestamp;
             counterLo = random.nextInt() & Scru128.MAX_COUNTER_LO;
-            status = Status.CLOCK_ROLLBACK;
+            lastStatus = Status.CLOCK_ROLLBACK;
         }
 
         if (this.timestamp - tsCounterHi >= 1000) {
@@ -102,43 +103,37 @@ public class Scru128Generator {
             counterHi = random.nextInt() & Scru128.MAX_COUNTER_HI;
         }
 
-        return new Result(
-                Scru128Id.fromFields(this.timestamp, counterHi, counterLo, 0xffff_ffffL & random.nextInt()),
-                status
-        );
+        return Scru128Id.fromFields(this.timestamp, counterHi, counterLo, 0xffff_ffffL & random.nextInt());
     }
 
     /**
-     * Named tuple-like type returned by {@link #generateCore(long)}.
+     * Returns a {@link Status} code that indicates the internal state involved in the last generation of ID.
+     * <p>
+     * Note that the generator object should be protected from concurrent accesses during the sequential calls to a
+     * generation method and this method to avoid race conditions.
+     *
+     * @return status code from the last generation of ID.
      */
-    public static final class Result {
-        /**
-         * Generated ID.
-         */
-        public final @NotNull Scru128Id value;
-
-        /**
-         * Status code that indicates the internal state involved in the generation.
-         */
-        public final @NotNull Status status;
-
-        Result(@NotNull Scru128Id value, @NotNull Status status) {
-            this.value = value;
-            this.status = status;
-        }
+    public @NotNull Status getLastStatus() {
+        return lastStatus;
     }
 
     /**
-     * Status code reported by {@link #generateCore(long)} method.
+     * Status code returned by {@link #getLastStatus()} method.
      */
     public enum Status {
         /**
-         * Indicates that the timestamp passed was used because it was greater than the previous one.
+         * Indicates that the generator has yet to generate an ID.
+         */
+        NOT_EXECUTED,
+
+        /**
+         * Indicates that the latest timestamp was used because it was greater than the previous one.
          */
         NEW_TIMESTAMP,
 
         /**
-         * Indicates that counter_lo was incremented because the timestamp passed was no greater than the previous one.
+         * Indicates that counter_lo was incremented because the latest timestamp was no greater than the previous one.
          */
         COUNTER_LO_INC,
 
@@ -153,7 +148,7 @@ public class Scru128Generator {
         TIMESTAMP_INC,
 
         /**
-         * Indicates that the monotonic order of generated IDs was broken because the timestamp passed was less than
+         * Indicates that the monotonic order of generated IDs was broken because the latest timestamp was less than
          * the previous one by ten seconds or more.
          */
         CLOCK_ROLLBACK,
