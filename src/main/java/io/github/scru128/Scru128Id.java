@@ -58,10 +58,10 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
     /**
      * Creates an object from field values.
      *
-     * @param timestamp - 48-bit timestamp field value.
-     * @param counterHi - 24-bit counter_hi field value.
-     * @param counterLo - 24-bit counter_lo field value.
-     * @param entropy   - 32-bit entropy field value.
+     * @param timestamp 48-bit timestamp field value.
+     * @param counterHi 24-bit counter_hi field value.
+     * @param counterLo 24-bit counter_lo field value.
+     * @param entropy   32-bit entropy field value.
      * @return new object.
      * @throws IllegalArgumentException if any argument is out of the value range of the field.
      */
@@ -70,7 +70,7 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
                 counterHi < 0 ||
                 counterLo < 0 ||
                 entropy < 0 ||
-                timestamp > 0xffff_ffff_ffffL ||
+                timestamp > Scru128.MAX_TIMESTAMP ||
                 counterHi > Scru128.MAX_COUNTER_HI ||
                 counterLo > Scru128.MAX_COUNTER_LO ||
                 entropy > 0xffff_ffffL) {

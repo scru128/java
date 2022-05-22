@@ -10,6 +10,11 @@ public final class Scru128 {
     }
 
     /**
+     * Maximum value of 48-bit timestamp field.
+     */
+    static final long MAX_TIMESTAMP = 0xffff_ffff_ffffL;
+
+    /**
      * Maximum value of 24-bit counter_hi field.
      */
     static final int MAX_COUNTER_HI = 0xff_ffff;
@@ -26,7 +31,7 @@ public final class Scru128 {
     /**
      * Generates a new SCRU128 ID object.
      * <p>
-     * This function is thread safe; multiple threads can call it concurrently.
+     * This function is thread-safe; multiple threads can call it concurrently.
      *
      * @return new object.
      */
@@ -37,7 +42,7 @@ public final class Scru128 {
     /**
      * Generates a new SCRU128 ID encoded in a string.
      * <p>
-     * This function is thread safe. Use this to quickly get a new SCRU128 ID as a string.
+     * This function is thread-safe. Use this to quickly get a new SCRU128 ID as a string.
      *
      * @return 25-digit canonical string representation.
      */
