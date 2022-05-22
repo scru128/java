@@ -64,11 +64,11 @@ public class Scru128Generator {
      *
      * @param timestamp 48-bit timestamp field value.
      * @return new SCRU128 ID object.
-     * @throws IllegalArgumentException if the argument is not a 48-bit unsigned integer.
+     * @throws IllegalArgumentException if the argument is not a 48-bit positive integer.
      */
     public @NotNull Scru128Id generateCore(long timestamp) {
-        if (timestamp < 0 || timestamp > Scru128.MAX_TIMESTAMP) {
-            throw new IllegalArgumentException("`timestamp` must be a 48-bit unsigned integer");
+        if (timestamp < 1 || timestamp > Scru128.MAX_TIMESTAMP) {
+            throw new IllegalArgumentException("`timestamp` must be a 48-bit positive integer");
         }
 
         lastStatus = Status.NEW_TIMESTAMP;
