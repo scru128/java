@@ -98,7 +98,7 @@ public class Scru128Generator {
             lastStatus = Status.CLOCK_ROLLBACK;
         }
 
-        if (this.timestamp - tsCounterHi >= 1000) {
+        if (this.timestamp - tsCounterHi >= 1000 || tsCounterHi < 1) {
             tsCounterHi = this.timestamp;
             counterHi = random.nextInt() & Scru128.MAX_COUNTER_HI;
         }
