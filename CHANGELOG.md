@@ -7,6 +7,10 @@
 - Iterable and Iterator implementations to `Scru128Generator` to make it work as
   infinite iterator
 
+### Maintenance
+
+- Update gradlew and compile-time/development dependencies
+
 ## v2.1.2 - 2022-06-11
 
 ### Fixed
