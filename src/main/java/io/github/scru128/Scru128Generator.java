@@ -3,13 +3,14 @@ package io.github.scru128;
 import org.jetbrains.annotations.NotNull;
 
 import java.security.SecureRandom;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.Random;
 
 /**
  * Represents a SCRU128 ID generator that encapsulates the monotonic counters and other internal states.
  */
-public class Scru128Generator {
+public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<@NotNull Scru128Id> {
     private long timestamp = 0;
     private int counterHi = 0;
     private int counterLo = 0;
@@ -116,6 +117,38 @@ public class Scru128Generator {
      */
     public @NotNull Status getLastStatus() {
         return lastStatus;
+    }
+
+    /**
+     * Returns an infinite iterator object that produces a new ID for each call of {@code next()}.
+     *
+     * @return infinite iterator.
+     */
+    @Override
+    public @NotNull Iterator<@NotNull Scru128Id> iterator() {
+        return this;
+    }
+
+    /**
+     * Returns {@code true} always for {@code this} to behave as an infinite iterator.
+     *
+     * @return {@code true} always.
+     */
+    @Override
+    public boolean hasNext() {
+        return true;
+    }
+
+    /**
+     * Returns a new SCRU128 ID object for each call, infinitely.
+     * <p>
+     * This method is a synonym for {@link #generate()} to use {@code this} as an infinite iterator.
+     *
+     * @return new SCRU128 ID object.
+     */
+    @Override
+    public @NotNull Scru128Id next() {
+        return generate();
     }
 
     /**

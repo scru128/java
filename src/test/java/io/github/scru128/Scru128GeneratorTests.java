@@ -45,4 +45,18 @@ class Scru128GeneratorTests {
         assertTrue(prev.compareTo(curr) > 0);
         assertEquals(curr.getTimestamp(), ts - 10_000);
     }
+
+    @Test
+    @DisplayName("Is iterable with for-each loop")
+    void testIterableImplementation() {
+        int i = 0;
+        for (Scru128Id e : new Scru128Generator()) {
+            assert (e.getTimestamp() > 0);
+            i += 1;
+            if (i > 100) {
+                break;
+            }
+        }
+        assertEquals(101, i);
+    }
 }
