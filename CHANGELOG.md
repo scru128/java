@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.3.0 - unreleased
+
+### Added
+
+- `generateMonotonic()` and `generateCoreMonotonic()` to `Scru128Generator`
+
 ## v2.2.0 - 2022-12-23
 
 ### Added
