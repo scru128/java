@@ -53,7 +53,7 @@ class Scru128GeneratorGenerateCoreTests {
     }
 }
 
-class Scru128GeneratorGenerateCoreMonotonicTests {
+class Scru128GeneratorGenerateCoreNoRewindTests {
     @Test
     @DisplayName("Generates increasing IDs even with decreasing or constant timestamp")
     void testDecreasingOrConstantTimestamp() {
@@ -61,13 +61,13 @@ class Scru128GeneratorGenerateCoreMonotonicTests {
         Scru128Generator g = new Scru128Generator();
         assertEquals(g.getLastStatus(), Scru128Generator.Status.NOT_EXECUTED);
 
-        Scru128Id prev = g.generateCoreMonotonic(ts);
+        Scru128Id prev = g.generateCoreNoRewind(ts);
         assertNotNull(prev);
         assertEquals(g.getLastStatus(), Scru128Generator.Status.NEW_TIMESTAMP);
         assertEquals(prev.getTimestamp(), ts);
 
         for (long i = 0; i < 100_000; i++) {
-            Scru128Id curr = g.generateCoreMonotonic(ts - Math.min(9_998, i));
+            Scru128Id curr = g.generateCoreNoRewind(ts - Math.min(9_998, i));
             assertNotNull(curr);
             assertTrue(g.getLastStatus() == Scru128Generator.Status.COUNTER_LO_INC ||
                     g.getLastStatus() == Scru128Generator.Status.COUNTER_HI_INC ||
@@ -85,16 +85,16 @@ class Scru128GeneratorGenerateCoreMonotonicTests {
         Scru128Generator g = new Scru128Generator();
         assertEquals(g.getLastStatus(), Scru128Generator.Status.NOT_EXECUTED);
 
-        Scru128Id prev = g.generateCoreMonotonic(ts);
+        Scru128Id prev = g.generateCoreNoRewind(ts);
         assertNotNull(prev);
         assertEquals(g.getLastStatus(), Scru128Generator.Status.NEW_TIMESTAMP);
         assertEquals(prev.getTimestamp(), ts);
 
-        Scru128Id curr = g.generateCoreMonotonic(ts - 10_000);
+        Scru128Id curr = g.generateCoreNoRewind(ts - 10_000);
         assertNull(curr);
         assertEquals(g.getLastStatus(), Scru128Generator.Status.NEW_TIMESTAMP);
 
-        curr = g.generateCoreMonotonic(ts - 10_001);
+        curr = g.generateCoreNoRewind(ts - 10_001);
         assertNull(curr);
         assertEquals(g.getLastStatus(), Scru128Generator.Status.NEW_TIMESTAMP);
     }
