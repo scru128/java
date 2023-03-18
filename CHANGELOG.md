@@ -10,7 +10,6 @@
 
 ### Deprecated
 
-- `Scru128Generator#getLastStatus()` and `Scru128Generator.Status`
 - `Scru128Generator#generateCore(long)`
 
 ## v2.2.0 - 2022-12-23
