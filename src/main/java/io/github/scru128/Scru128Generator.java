@@ -33,17 +33,17 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
     private int counterLo = 0;
 
     /**
-     * Timestamp at the last renewal of counter_hi field.
+     * The timestamp at the last renewal of counter_hi field.
      */
     private long tsCounterHi = 0;
 
     /**
-     * Status code reported at the last generation.
+     * The status code reported at the last generation.
      */
     private @NotNull Status lastStatus = Status.NOT_EXECUTED;
 
     /**
-     * Random number generator used by the generator.
+     * The random number generator used by the generator.
      */
     private final @NotNull Random random;
 
@@ -57,7 +57,7 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
     /**
      * Creates a generator object with a specified random number generator.
      *
-     * @param random random number generator (should be cryptographically strong and securely seeded).
+     * @param random A random number generator (which should be cryptographically strong and securely seeded).
      */
     public Scru128Generator(@NotNull Random random) {
         this.random = Objects.requireNonNull(random);
@@ -68,7 +68,7 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
      * <p>
      * See the {@link Scru128Generator} class documentation for the description.
      *
-     * @return new SCRU128 ID object.
+     * @return A new SCRU128 ID object.
      */
     public synchronized @NotNull Scru128Id generate() {
         return generateCore(System.currentTimeMillis());
@@ -80,7 +80,7 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
      * <p>
      * See the {@link Scru128Generator} class documentation for the description.
      *
-     * @return new SCRU128 ID object.
+     * @return A new SCRU128 ID object.
      */
     public synchronized @Nullable Scru128Id generateNoRewind() {
         return generateCoreNoRewind(System.currentTimeMillis());
@@ -94,8 +94,8 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
      * Unlike {@link #generate}, this method is NOT thread-safe. The generator object should be protected from
      * concurrent accesses using a mutex or other synchronization mechanism to avoid race conditions.
      *
-     * @param timestamp 48-bit timestamp field value.
-     * @return new SCRU128 ID object.
+     * @param timestamp A 48-bit timestamp field value.
+     * @return A new SCRU128 ID object.
      * @throws IllegalArgumentException if the argument is not a 48-bit positive integer.
      */
     public @NotNull Scru128Id generateCore(long timestamp) {
@@ -120,8 +120,8 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
      * Unlike {@link #generateNoRewind}, this method is NOT thread-safe. The generator object should be protected from
      * concurrent accesses using a mutex or other synchronization mechanism to avoid race conditions.
      *
-     * @param timestamp 48-bit timestamp field value.
-     * @return new SCRU128 ID object.
+     * @param timestamp A 48-bit timestamp field value.
+     * @return A new SCRU128 ID object.
      * @throws IllegalArgumentException if the argument is not a 48-bit positive integer.
      */
     public @Nullable Scru128Id generateCoreNoRewind(long timestamp) {
@@ -170,7 +170,7 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
      * Note that the generator object should be protected from concurrent accesses during the sequential calls to a
      * generation method and this method to avoid race conditions.
      *
-     * @return status code from the last generation of ID.
+     * @return A status code from the last generation of ID.
      * @deprecated Use {@link #generateNoRewind} to guarantee monotonicity.
      */
     @Deprecated
@@ -181,7 +181,7 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
     /**
      * Returns an infinite iterator object that produces a new ID for each call of {@code next()}.
      *
-     * @return infinite iterator.
+     * @return An infinite iterator.
      */
     @Override
     public @NotNull Iterator<@NotNull Scru128Id> iterator() {
@@ -203,7 +203,7 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
      * <p>
      * This method is a synonym for {@link #generate} to use {@code this} as an infinite iterator.
      *
-     * @return new SCRU128 ID object.
+     * @return A new SCRU128 ID object.
      */
     @Override
     public @NotNull Scru128Id next() {
@@ -211,7 +211,7 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
     }
 
     /**
-     * Status code returned by {@link #getLastStatus} method.
+     * The status code returned by {@link #getLastStatus} method.
      *
      * @deprecated Use {@link #generateNoRewind} to guarantee monotonicity.
      */

@@ -36,7 +36,7 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
      *                  order. The byte array can be shorter than 16 bytes (128 bits) and in that case the missing
      *                  significant bytes are all assumed to be zero, or it can be longer than 16 bytes as long as
      *                  the extra significant bytes are all zero.
-     * @return new object.
+     * @return A new object.
      * @throws IllegalArgumentException if the argument byte array does not fit in 128 bits.
      */
     public static @NotNull Scru128Id fromByteArray(@NotNull byte[] byteArray) {
@@ -58,11 +58,11 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
     /**
      * Creates an object from field values.
      *
-     * @param timestamp 48-bit timestamp field value.
-     * @param counterHi 24-bit counter_hi field value.
-     * @param counterLo 24-bit counter_lo field value.
-     * @param entropy   32-bit entropy field value.
-     * @return new object.
+     * @param timestamp A 48-bit timestamp field value.
+     * @param counterHi A 24-bit counter_hi field value.
+     * @param counterLo A 24-bit counter_lo field value.
+     * @param entropy   A 32-bit entropy field value.
+     * @return A new object.
      * @throws IllegalArgumentException if any argument is out of the value range of the field.
      */
     public static @NotNull Scru128Id fromFields(long timestamp, int counterHi, int counterLo, long entropy) {
@@ -98,7 +98,7 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
     }
 
     /**
-     * O(1) map from ASCII code points to Base36 digit values.
+     * An O(1) map from ASCII code points to Base36 digit values.
      */
     private static final @NotNull byte[] DECODE_MAP = new byte[]{
             0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f,
@@ -114,8 +114,8 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
     /**
      * Creates an object from a 25-digit string representation.
      *
-     * @param strValue 25-digit string representation.
-     * @return new object.
+     * @param strValue A 25-digit string representation.
+     * @return A new object.
      * @throws IllegalArgumentException if the argument is not a valid string representation.
      */
     public static @NotNull Scru128Id fromString(@NotNull String strValue) {
@@ -160,7 +160,7 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
     /**
      * Returns a byte array containing the 128-bit unsigned integer representation.
      *
-     * @return 16-byte byte array containing the 128-bit unsigned integer representation in the big-endian (network)
+     * @return A 16-byte byte array containing the 128-bit unsigned integer representation in the big-endian (network)
      * byte order.
      */
     public @NotNull byte[] toByteArray() {
@@ -170,7 +170,7 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
     /**
      * Returns the 48-bit timestamp field value.
      *
-     * @return 48-bit unsigned integer.
+     * @return A 48-bit unsigned integer.
      */
     public long getTimestamp() {
         return subLong(0, 6);
@@ -179,7 +179,7 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
     /**
      * Returns the 24-bit counter_hi field value.
      *
-     * @return 24-bit unsigned integer.
+     * @return A 24-bit unsigned integer.
      */
     public int getCounterHi() {
         return (int) subLong(6, 9);
@@ -188,7 +188,7 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
     /**
      * Returns the 24-bit counter_lo field value.
      *
-     * @return 24-bit unsigned integer.
+     * @return A 24-bit unsigned integer.
      */
     public int getCounterLo() {
         return (int) subLong(9, 12);
@@ -197,7 +197,7 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
     /**
      * Returns the 32-bit entropy field value.
      *
-     * @return 32-bit unsigned integer.
+     * @return A 32-bit unsigned integer.
      */
     public long getEntropy() {
         return subLong(12, 16);
@@ -237,7 +237,7 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
     }
 
     /**
-     * Returns true if the object is equivalent to the argument.
+     * Returns {@code true} if the object is equivalent to the argument.
      */
     @Override
     public boolean equals(@Nullable Object other) {
@@ -270,7 +270,7 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
     /**
      * Returns a part of {@code bytes} as an unsigned long value.
      *
-     * @return long value representing {@code bytes} from {@code beginIndex} to {@code endIndex - 1}, inclusive.
+     * @return A long value representing {@code bytes} from {@code beginIndex} to {@code endIndex - 1}, inclusive.
      */
     private long subLong(int beginIndex, int endIndex) {
         long buffer = 0;
