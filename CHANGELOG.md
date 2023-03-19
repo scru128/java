@@ -1,5 +1,17 @@
 # Changelog
 
+## v2.2.1 - 2023-03-19
+
+### Added
+
+- `generateNoRewind()` and `generateCoreNoRewind(long, long)` to
+  `Scru128Generator` (experimental)
+
+### Maintenance
+
+- Updated gradlew and compile-time/development dependencies
+- Improved documentation about generator method flavors
+
 ## v2.2.0 - 2022-12-23
 
 ### Added
@@ -9,7 +21,7 @@
 
 ### Maintenance
 
-- Update gradlew and compile-time/development dependencies
+- Updated gradlew and compile-time/development dependencies
 
 ## v2.1.2 - 2022-06-11
 

@@ -10,41 +10,41 @@ public final class Scru128 {
     }
 
     /**
-     * Maximum value of 48-bit timestamp field.
+     * The maximum value of 48-bit timestamp field.
      */
     static final long MAX_TIMESTAMP = 0xffff_ffff_ffffL;
 
     /**
-     * Maximum value of 24-bit counter_hi field.
+     * The maximum value of 24-bit counter_hi field.
      */
     static final int MAX_COUNTER_HI = 0xff_ffff;
 
     /**
-     * Maximum value of 24-bit counter_lo field.
+     * The maximum value of 24-bit counter_lo field.
      */
     static final int MAX_COUNTER_LO = 0xff_ffff;
 
-    private static class DefaultGeneratorLazyHolder {
-        static final @NotNull Scru128Generator DEFAULT_GENERATOR = new Scru128Generator();
+    private static class GlobalGeneratorLazyHolder {
+        static final @NotNull Scru128Generator GLOBAL_GENERATOR = new Scru128Generator();
     }
 
     /**
-     * Generates a new SCRU128 ID object.
+     * Generates a new SCRU128 ID object using the global generator.
      * <p>
      * This function is thread-safe; multiple threads can call it concurrently.
      *
-     * @return new object.
+     * @return A new object.
      */
     public static @NotNull Scru128Id generate() {
-        return DefaultGeneratorLazyHolder.DEFAULT_GENERATOR.generate();
+        return GlobalGeneratorLazyHolder.GLOBAL_GENERATOR.generate();
     }
 
     /**
-     * Generates a new SCRU128 ID encoded in a string.
+     * Generates a new SCRU128 ID encoded in a string using the global generator.
      * <p>
      * This function is thread-safe. Use this to quickly get a new SCRU128 ID as a string.
      *
-     * @return 25-digit canonical string representation.
+     * @return A 25-digit canonical string representation.
      */
     public static @NotNull String generateString() {
         return generate().toString();

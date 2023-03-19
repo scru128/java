@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.github.scru128"
-version = "2.2.0"
+version = "2.2.1"
 
 repositories {
     mavenCentral()
@@ -13,10 +13,10 @@ repositories {
 
 dependencies {
     // Use @NotNull and @Nullable annotations for Kotlin interoperability
-    compileOnly("org.jetbrains:annotations:23.1.0")
+    compileOnly("org.jetbrains:annotations:24.0.1")
 
     // Use JUnit Jupiter for testing.
-    testImplementation("org.junit.jupiter:junit-jupiter:5.9.1")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
 }
 
 tasks.test {
