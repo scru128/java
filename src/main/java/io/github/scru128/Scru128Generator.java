@@ -14,18 +14,18 @@ import java.util.Random;
  * The generator offers four different methods to generate a SCRU128 ID:
  * <table border="1">
  *   <caption>Comparison of generator functions</caption>
- *   <tr><th>Flavor</th>                           <th>Timestamp</th><th>Thread-</th><th>On big clock rewind</th></tr>
- *   <tr><td>{@link #generate}</td>                <td>Now</td>      <td>Safe</td>   <td>Rewinds state</td></tr>
- *   <tr><td>{@link #generateNoRewind}</td>        <td>Now</td>      <td>Safe</td>   <td>Returns null</td></tr>
- *   <tr><td>{@link #generateCore(long, long)}</td><td>Argument</td> <td>Unsafe</td> <td>Rewinds state</td></tr>
- *   <tr><td>{@link #generateCoreNoRewind}</td>    <td>Argument</td> <td>Unsafe</td> <td>Returns null</td></tr>
+ *   <tr><th>Flavor</th>                       <th>Timestamp</th><th>Thread-</th><th>On big clock rewind</th></tr>
+ *   <tr><td>{@link #generate}</td>            <td>Now</td>      <td>Safe</td>   <td>Rewinds state</td></tr>
+ *   <tr><td>{@link #generateNoRewind}</td>    <td>Now</td>      <td>Safe</td>   <td>Returns null</td></tr>
+ *   <tr><td>{@link #generateCore}</td>        <td>Argument</td> <td>Unsafe</td> <td>Rewinds state</td></tr>
+ *   <tr><td>{@link #generateCoreNoRewind}</td><td>Argument</td> <td>Unsafe</td> <td>Returns null</td></tr>
  * </table>
  * <p>
  * Each method returns monotonically increasing IDs unless a timestamp provided is significantly (by ten seconds or
  * more by default) smaller than the one embedded in the immediately preceding ID. If such a significant clock
- * rollback is detected, the standard {@link #generate} rewinds the generator state and returns a new ID based on the
- * current timestamp, whereas NoRewind variants keep the state untouched and return null. Core functions offer
- * low-level thread-unsafe primitives.
+ * rollback is detected, the {@link #generate} method rewinds the generator state and returns a new ID based on the
+ * current timestamp, whereas the experimental NoRewind variants keep the state untouched and return null. Core
+ * functions offer low-level thread-unsafe primitives.
  */
 public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<@NotNull Scru128Id> {
     /**
@@ -76,12 +76,12 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
      * @return A new SCRU128 ID object.
      */
     public synchronized @NotNull Scru128Id generate() {
-        return generateCore(System.currentTimeMillis(), DEFAULT_ROLLBACK_ALLOWANCE);
+        return generateCore(System.currentTimeMillis());
     }
 
     /**
-     * Generates a new SCRU128 ID object from the current timestamp, guaranteeing the monotonic order of generated IDs
-     * despite a significant timestamp rollback.
+     * Experimental: Generates a new SCRU128 ID object from the current timestamp, guaranteeing the monotonic order
+     * of generated IDs despite a significant timestamp rollback.
      * <p>
      * See the {@link Scru128Generator} class documentation for the description.
      *
@@ -99,13 +99,12 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
      * Unlike {@link #generate}, this method is NOT thread-safe. The generator object should be protected from
      * concurrent accesses using a mutex or other synchronization mechanism to avoid race conditions.
      *
-     * @param timestamp         A 48-bit timestamp field value.
-     * @param rollbackAllowance The amount of timestamp rollback that is considered significant. A suggested value is
-     *                          {@code 10_000} (milliseconds).
+     * @param timestamp A 48-bit timestamp field value.
      * @return A new SCRU128 ID object.
      * @throws IllegalArgumentException if the timestamp is not a 48-bit positive integer.
      */
-    public @NotNull Scru128Id generateCore(long timestamp, long rollbackAllowance) {
+    public @NotNull Scru128Id generateCore(long timestamp) {
+        long rollbackAllowance = DEFAULT_ROLLBACK_ALLOWANCE;
         Scru128Id value = generateCoreNoRewind(timestamp, rollbackAllowance);
         if (value == null) {
             // reset state and resume
@@ -119,20 +118,8 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
     }
 
     /**
-     * Generates a new SCRU128 ID object from the timestamp passed.
-     *
-     * @param timestamp A 48-bit timestamp field value.
-     * @return A new SCRU128 ID object.
-     * @deprecated Use {@link #generateCore(long, long)}.
-     */
-    @Deprecated
-    public @NotNull Scru128Id generateCore(long timestamp) {
-        return generateCore(timestamp, DEFAULT_ROLLBACK_ALLOWANCE);
-    }
-
-    /**
-     * Generates a new SCRU128 ID object from the timestamp passed, guaranteeing the monotonic order of generated IDs
-     * despite a significant timestamp rollback.
+     * Experimental: Generates a new SCRU128 ID object from the timestamp passed, guaranteeing the monotonic order of
+     * generated IDs despite a significant timestamp rollback.
      * <p>
      * See the {@link Scru128Generator} class documentation for the description.
      * <p>

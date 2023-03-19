@@ -1,16 +1,11 @@
 # Changelog
 
-## v2.3.0 - unreleased
+## v2.2.1 - unreleased
 
 ### Added
 
 - `generateNoRewind()` and `generateCoreNoRewind(long, long)` to
-  `Scru128Generator`
-- `generateCore(long, long)` to `Scru128Generator`
-
-### Deprecated
-
-- `Scru128Generator#generateCore(long)`
+  `Scru128Generator` (experimental)
 
 ## v2.2.0 - 2022-12-23
 
