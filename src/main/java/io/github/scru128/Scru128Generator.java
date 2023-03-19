@@ -139,10 +139,10 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
             throw new IllegalArgumentException("`rollbackAllowance` out of reasonable range");
         }
 
-        lastStatus = Status.NEW_TIMESTAMP;
         if (timestamp > this.timestamp) {
             this.timestamp = timestamp;
             counterLo = random.nextInt() & Scru128.MAX_COUNTER_LO;
+            lastStatus = Status.NEW_TIMESTAMP;
         } else if (timestamp + rollbackAllowance > this.timestamp) {
             // go on with previous timestamp if new one is not much smaller
             counterLo++;
