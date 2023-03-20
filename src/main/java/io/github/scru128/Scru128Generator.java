@@ -17,7 +17,7 @@ import java.util.Random;
  *   <tr><th>Flavor</th>                      <th>Timestamp</th><th>Thread-</th><th>On big clock rewind</th></tr>
  *   <tr><td>{@link #generate}</td>           <td>Now</td>      <td>Safe</td>   <td>Resets generator</td></tr>
  *   <tr><td>{@link #generateOrAbort}</td>    <td>Now</td>      <td>Safe</td>   <td>Returns null</td></tr>
- *   <tr><td>{@link #generateCore}</td>       <td>Argument</td> <td>Unsafe</td> <td>Resets generator</td></tr>
+ *   <tr><td>{@link #generateOrResetCore}</td><td>Argument</td> <td>Unsafe</td> <td>Resets generator</td></tr>
  *   <tr><td>{@link #generateOrAbortCore}</td><td>Argument</td> <td>Unsafe</td> <td>Returns null</td></tr>
  * </table>
  * <p>
@@ -69,14 +69,15 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
     }
 
     /**
-     * Generates a new SCRU128 ID object from the current timestamp.
+     * Generates a new SCRU128 ID object from the current timestamp, or resets the generator upon significant
+     * timestamp rollback.
      * <p>
      * See the {@link Scru128Generator} class documentation for the description.
      *
      * @return A new SCRU128 ID object.
      */
     public synchronized @NotNull Scru128Id generate() {
-        return generateCore(System.currentTimeMillis());
+        return generateOrResetCore(System.currentTimeMillis(), DEFAULT_ROLLBACK_ALLOWANCE);
     }
 
     /**
@@ -92,19 +93,21 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
     }
 
     /**
-     * Generates a new SCRU128 ID object from the timestamp passed.
+     * Generates a new SCRU128 ID object from the timestamp passed, or resets the generator upon significant
+     * timestamp rollback.
      * <p>
      * See the {@link Scru128Generator} class documentation for the description.
      * <p>
      * Unlike {@link #generate}, this method is NOT thread-safe. The generator object should be protected from
      * concurrent accesses using a mutex or other synchronization mechanism to avoid race conditions.
      *
-     * @param timestamp A 48-bit timestamp field value.
+     * @param timestamp         A 48-bit timestamp field value.
+     * @param rollbackAllowance The amount of timestamp rollback that is considered significant. A suggested value is
+     *                          {@code 10_000} (milliseconds).
      * @return A new SCRU128 ID object.
      * @throws IllegalArgumentException if the timestamp is not a 48-bit positive integer.
      */
-    public @NotNull Scru128Id generateCore(long timestamp) {
-        long rollbackAllowance = DEFAULT_ROLLBACK_ALLOWANCE;
+    public @NotNull Scru128Id generateOrResetCore(long timestamp, long rollbackAllowance) {
         Scru128Id value = generateOrAbortCore(timestamp, rollbackAllowance);
         if (value == null) {
             // reset state and resume
@@ -115,6 +118,19 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
             assert value != null;
         }
         return value;
+    }
+
+    /**
+     * A deprecated synonym for {@code generateOrResetCore(timestamp, 10_000)}.
+     *
+     * @param timestamp A 48-bit timestamp field value.
+     * @return A new SCRU128 ID object.
+     * @throws IllegalArgumentException if the timestamp is not a 48-bit positive integer.
+     * @deprecated Use {@code generateOrResetCore(timestamp, 10_000)} instead.
+     */
+    @Deprecated
+    public @NotNull Scru128Id generateCore(long timestamp) {
+        return generateOrResetCore(timestamp, DEFAULT_ROLLBACK_ALLOWANCE);
     }
 
     /**
