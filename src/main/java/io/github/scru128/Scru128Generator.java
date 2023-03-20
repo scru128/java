@@ -195,7 +195,9 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
      * generation method and this method to avoid race conditions.
      *
      * @return A status code from the last generation of ID.
+     * @deprecated Use {@link #generateOrAbort} to guarantee monotonicity.
      */
+    @Deprecated
     public @NotNull Status getLastStatus() {
         return lastStatus;
     }
@@ -234,7 +236,10 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
 
     /**
      * The status code returned by {@link #getLastStatus} method.
+     *
+     * @deprecated Use {@link #generateOrAbort} to guarantee monotonicity.
      */
+    @Deprecated
     public enum Status {
         /**
          * Indicates that the generator has yet to generate an ID.
