@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class Scru128GeneratorGenerateCoreTests {
+class Scru128GeneratorGenerateOrResetTests {
     @Test
     @DisplayName("Generates increasing IDs even with decreasing or constant timestamp")
     void testDecreasingOrConstantTimestamp() {
@@ -13,12 +13,12 @@ class Scru128GeneratorGenerateCoreTests {
         Scru128Generator g = new Scru128Generator();
         assertEquals(g.getLastStatus(), Scru128Generator.Status.NOT_EXECUTED);
 
-        Scru128Id prev = g.generateCore(ts);
+        Scru128Id prev = g.generateOrResetCore(ts, 10_000);
         assertEquals(g.getLastStatus(), Scru128Generator.Status.NEW_TIMESTAMP);
         assertEquals(prev.getTimestamp(), ts);
 
         for (long i = 0; i < 100_000; i++) {
-            Scru128Id curr = g.generateCore(ts - Math.min(9_998, i));
+            Scru128Id curr = g.generateOrResetCore(ts - Math.min(9_998, i), 10_000);
             assertTrue(g.getLastStatus() == Scru128Generator.Status.COUNTER_LO_INC ||
                     g.getLastStatus() == Scru128Generator.Status.COUNTER_HI_INC ||
                     g.getLastStatus() == Scru128Generator.Status.TIMESTAMP_INC);
@@ -29,23 +29,23 @@ class Scru128GeneratorGenerateCoreTests {
     }
 
     @Test
-    @DisplayName("Breaks increasing order of IDs if timestamp moves backward a lot")
+    @DisplayName("Breaks increasing order of IDs if timestamp goes backwards by ten seconds")
     void testTimestampRollback() {
         long ts = 0x0123_4567_89abL;
         Scru128Generator g = new Scru128Generator();
         assertEquals(g.getLastStatus(), Scru128Generator.Status.NOT_EXECUTED);
 
-        Scru128Id prev = g.generateCore(ts);
+        Scru128Id prev = g.generateOrResetCore(ts, 10_000);
         assertEquals(g.getLastStatus(), Scru128Generator.Status.NEW_TIMESTAMP);
         assertEquals(prev.getTimestamp(), ts);
 
-        Scru128Id curr = g.generateCore(ts - 10_000);
+        Scru128Id curr = g.generateOrResetCore(ts - 10_000, 10_000);
         assertEquals(g.getLastStatus(), Scru128Generator.Status.CLOCK_ROLLBACK);
         assertTrue(prev.compareTo(curr) > 0);
         assertEquals(curr.getTimestamp(), ts - 10_000);
 
         prev = curr;
-        curr = g.generateCore(ts - 10_001);
+        curr = g.generateOrResetCore(ts - 10_001, 10_000);
         assertTrue(g.getLastStatus() == Scru128Generator.Status.COUNTER_LO_INC ||
                 g.getLastStatus() == Scru128Generator.Status.COUNTER_HI_INC ||
                 g.getLastStatus() == Scru128Generator.Status.TIMESTAMP_INC);
@@ -53,7 +53,7 @@ class Scru128GeneratorGenerateCoreTests {
     }
 }
 
-class Scru128GeneratorGenerateCoreNoRewindTests {
+class Scru128GeneratorGenerateOrAbortTests {
     @Test
     @DisplayName("Generates increasing IDs even with decreasing or constant timestamp")
     void testDecreasingOrConstantTimestamp() {
@@ -61,13 +61,13 @@ class Scru128GeneratorGenerateCoreNoRewindTests {
         Scru128Generator g = new Scru128Generator();
         assertEquals(g.getLastStatus(), Scru128Generator.Status.NOT_EXECUTED);
 
-        Scru128Id prev = g.generateCoreNoRewind(ts, 10000);
+        Scru128Id prev = g.generateOrAbortCore(ts, 10000);
         assertNotNull(prev);
         assertEquals(g.getLastStatus(), Scru128Generator.Status.NEW_TIMESTAMP);
         assertEquals(prev.getTimestamp(), ts);
 
         for (long i = 0; i < 100_000; i++) {
-            Scru128Id curr = g.generateCoreNoRewind(ts - Math.min(9_998, i), 10000);
+            Scru128Id curr = g.generateOrAbortCore(ts - Math.min(9_998, i), 10000);
             assertNotNull(curr);
             assertTrue(g.getLastStatus() == Scru128Generator.Status.COUNTER_LO_INC ||
                     g.getLastStatus() == Scru128Generator.Status.COUNTER_HI_INC ||
@@ -79,22 +79,22 @@ class Scru128GeneratorGenerateCoreNoRewindTests {
     }
 
     @Test
-    @DisplayName("Returns null if timestamp moves backward a lot")
+    @DisplayName("Returns null if timestamp goes backwards by ten seconds")
     void testTimestampRollback() {
         long ts = 0x0123_4567_89abL;
         Scru128Generator g = new Scru128Generator();
         assertEquals(g.getLastStatus(), Scru128Generator.Status.NOT_EXECUTED);
 
-        Scru128Id prev = g.generateCoreNoRewind(ts, 10000);
+        Scru128Id prev = g.generateOrAbortCore(ts, 10000);
         assertNotNull(prev);
         assertEquals(g.getLastStatus(), Scru128Generator.Status.NEW_TIMESTAMP);
         assertEquals(prev.getTimestamp(), ts);
 
-        Scru128Id curr = g.generateCoreNoRewind(ts - 10_000, 10000);
+        Scru128Id curr = g.generateOrAbortCore(ts - 10_000, 10000);
         assertNull(curr);
         assertEquals(g.getLastStatus(), Scru128Generator.Status.NEW_TIMESTAMP);
 
-        curr = g.generateCoreNoRewind(ts - 10_001, 10000);
+        curr = g.generateOrAbortCore(ts - 10_001, 10000);
         assertNull(curr);
         assertEquals(g.getLastStatus(), Scru128Generator.Status.NEW_TIMESTAMP);
     }
