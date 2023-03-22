@@ -176,7 +176,7 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
                 }
             }
         } else {
-            // abort if clock moves back to unbearable extent
+            // abort if clock went backwards to unbearable extent
             return null;
         }
 

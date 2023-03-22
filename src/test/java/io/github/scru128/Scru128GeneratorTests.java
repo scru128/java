@@ -29,7 +29,7 @@ class Scru128GeneratorGenerateOrResetTests {
     }
 
     @Test
-    @DisplayName("Breaks increasing order of IDs if timestamp moves backward a lot")
+    @DisplayName("Breaks increasing order of IDs if timestamp goes backwards by ten seconds")
     void testTimestampRollback() {
         long ts = 0x0123_4567_89abL;
         Scru128Generator g = new Scru128Generator();
@@ -79,7 +79,7 @@ class Scru128GeneratorGenerateOrAbortTests {
     }
 
     @Test
-    @DisplayName("Returns null if timestamp moves backward a lot")
+    @DisplayName("Returns null if timestamp goes backwards by ten seconds")
     void testTimestampRollback() {
         long ts = 0x0123_4567_89abL;
         Scru128Generator g = new Scru128Generator();
