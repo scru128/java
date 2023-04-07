@@ -1,6 +1,6 @@
 # SCRU128: Sortable, Clock and Random number-based Unique identifier
 
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.scru128/scru128)](https://central.sonatype.com/namespace/io.github.scru128)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.scru128/scru128)](https://central.sonatype.com/artifact/io.github.scru128/scru128)
 [![License](https://img.shields.io/github/license/scru128/java)](https://github.com/scru128/java/blob/main/LICENSE)
 
 SCRU128 ID is yet another attempt to supersede [UUID] for the users who need
@@ -63,7 +63,7 @@ dependencies {
 }
 ```
 
-[Maven Central Repository]: https://central.sonatype.com/namespace/io.github.scru128
+[Maven Central Repository]: https://central.sonatype.com/artifact/io.github.scru128/scru128
 
 ## Target environment
 
