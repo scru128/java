@@ -1,6 +1,6 @@
 # SCRU128: Sortable, Clock and Random number-based Unique identifier
 
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.scru128/scru128)](https://search.maven.org/artifact/io.github.scru128/scru128)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.scru128/scru128)](https://central.sonatype.com/artifact/io.github.scru128/scru128)
 [![License](https://img.shields.io/github/license/scru128/java)](https://github.com/scru128/java/blob/main/LICENSE)
 
 SCRU128 ID is yet another attempt to supersede [UUID] for the users who need
@@ -44,10 +44,10 @@ System.out.println(Scru128.generateString()); // e.g. "036Z951MHZX67T63MQ9XE6Q0J
 
 See [SCRU128 Specification] for details.
 
-[uuid]: https://en.wikipedia.org/wiki/Universally_unique_identifier
-[ulid]: https://github.com/ulid/spec
-[ksuid]: https://github.com/segmentio/ksuid
-[scru128 specification]: https://github.com/scru128/spec
+[UUID]: https://en.wikipedia.org/wiki/Universally_unique_identifier
+[ULID]: https://github.com/ulid/spec
+[KSUID]: https://github.com/segmentio/ksuid
+[SCRU128 Specification]: https://github.com/scru128/spec
 
 ## Installation
 
@@ -63,7 +63,7 @@ dependencies {
 }
 ```
 
-[maven central repository]: https://search.maven.org/artifact/io.github.scru128/scru128
+[Maven Central Repository]: https://central.sonatype.com/artifact/io.github.scru128/scru128
 
 ## Target environment
 
