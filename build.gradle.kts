@@ -16,7 +16,7 @@ dependencies {
     compileOnly("org.jetbrains:annotations:24.0.1")
 
     // Use JUnit Jupiter for testing.
-    testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.9.3")
 }
 
 tasks.test {

@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.3.2 - unreleased
+
+### Maintenance
+
+- Updated gradlew and development dependencies
+
 ## v2.3.1 - 2023-04-07
 
 ### Maintenance
