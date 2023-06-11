@@ -83,6 +83,13 @@ class Scru128IdTests {
         cases.add("036Z8PUQ5A7J0TI08P4J 6CYA");
         cases.add("F5LXX1ZZ5PNORYNQGLHZMSP34");
         cases.add("ZZZZZZZZZZZZZZZZZZZZZZZZZ");
+        cases.add("039O\tVVKLFMQLQE7FZLLZ7C7T");
+        cases.add("039ONVVKLFMQLQ漢字FGVD1");
+        cases.add("039ONVVKL🤣QE7FZR2HDOQU");
+        cases.add("頭ONVVKLFMQLQE7FZRHTGCFZ");
+        cases.add("039ONVVKLFMQLQE7FZTFT5尾");
+        cases.add("039漢字A52XP4BVF4SN94E09CJA");
+        cases.add("039OOA52XP4BV😘SN97642MWL");
 
         for (String e : cases) {
             assertThrows(IllegalArgumentException.class, () -> {
