@@ -2,6 +2,10 @@
 
 ## v2.3.2 - unreleased
 
+### Changed
+
+- Error messages thrown by `Scru128Id` to improve error reporting
+
 ### Maintenance
 
 - Updated gradlew and development dependencies

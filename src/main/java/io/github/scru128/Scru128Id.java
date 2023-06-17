@@ -47,7 +47,7 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
         } else {
             for (int i = 0; i < byteArray.length - 16; i++) {
                 if (byteArray[i] != 0) {
-                    throw new IllegalArgumentException("cannot be interpreted as a 128-bit unsigned integer");
+                    throw new IllegalArgumentException("could not interpret byte array as 128-bit unsigned integer");
                 }
             }
             System.arraycopy(byteArray, byteArray.length - 16, object.bytes, 0, 16);
@@ -121,14 +121,15 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
     public static @NotNull Scru128Id fromString(@NotNull String strValue) {
         Objects.requireNonNull(strValue);
         if (strValue.length() != 25) {
-            throw new IllegalArgumentException("invalid length");
+            throw new IllegalArgumentException(String.format("invalid length: %d (expected 25)", strValue.length()));
         }
 
         byte[] src = new byte[25];
         for (int i = 0; i < 25; i++) {
             char c = strValue.charAt(i);
             if (c > 'z' || DECODE_MAP[c] == 0x7f) {
-                throw new IllegalArgumentException("invalid digit");
+                String s = new String(new int[]{strValue.codePointAt(i)}, 0, 1);
+                throw new IllegalArgumentException(String.format("invalid digit '%s' at %d", s, i));
             }
             src[i] = DECODE_MAP[c];
         }
