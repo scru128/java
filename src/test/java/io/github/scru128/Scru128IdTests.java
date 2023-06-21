@@ -53,8 +53,8 @@ class Scru128IdTests {
             assertEquals(fromFields, fromString);
             assertEquals(new BigInteger(e.string, 36), new BigInteger(1, fromFields.toByteArray()));
             assertEquals(new BigInteger(e.string, 36), new BigInteger(1, fromString.toByteArray()));
-            assertEquals(e.string.toUpperCase(), fromFields.toString());
-            assertEquals(e.string.toUpperCase(), fromString.toString());
+            assertEquals(e.string.toLowerCase(), fromFields.toString());
+            assertEquals(e.string.toLowerCase(), fromString.toString());
             assertEquals(e.timestamp, fromFields.getTimestamp());
             assertEquals(e.timestamp, fromString.getTimestamp());
             assertEquals(e.counterHi, fromFields.getCounterHi());
@@ -71,25 +71,25 @@ class Scru128IdTests {
     void testStringValidation() {
         ArrayList<String> cases = new ArrayList<>();
         cases.add("");
-        cases.add(" 036Z8PUQ4TSXSIGK6O19Y164Q");
-        cases.add("036Z8PUQ54QNY1VQ3HCBRKWEB ");
-        cases.add(" 036Z8PUQ54QNY1VQ3HELIVWAX ");
-        cases.add("+036Z8PUQ54QNY1VQ3HFCV3SS0");
-        cases.add("-036Z8PUQ54QNY1VQ3HHY8U1CH");
-        cases.add("+36Z8PUQ54QNY1VQ3HJQ48D9P");
-        cases.add("-36Z8PUQ5A7J0TI08OZ6ZDRDY");
-        cases.add("036Z8PUQ5A7J0T_08P2CDZ28V");
-        cases.add("036Z8PU-5A7J0TI08P3OL8OOL");
-        cases.add("036Z8PUQ5A7J0TI08P4J 6CYA");
-        cases.add("F5LXX1ZZ5PNORYNQGLHZMSP34");
-        cases.add("ZZZZZZZZZZZZZZZZZZZZZZZZZ");
-        cases.add("039O\tVVKLFMQLQE7FZLLZ7C7T");
-        cases.add("039ONVVKLFMQLQ漢字FGVD1");
-        cases.add("039ONVVKL🤣QE7FZR2HDOQU");
-        cases.add("頭ONVVKLFMQLQE7FZRHTGCFZ");
-        cases.add("039ONVVKLFMQLQE7FZTFT5尾");
-        cases.add("039漢字A52XP4BVF4SN94E09CJA");
-        cases.add("039OOA52XP4BV😘SN97642MWL");
+        cases.add(" 036z8puq4tsxsigk6o19y164q");
+        cases.add("036z8puq54qny1vq3hcbrkweb ");
+        cases.add(" 036z8puq54qny1vq3helivwax ");
+        cases.add("+036z8puq54qny1vq3hfcv3ss0");
+        cases.add("-036z8puq54qny1vq3hhy8u1ch");
+        cases.add("+36z8puq54qny1vq3hjq48d9p");
+        cases.add("-36z8puq5a7j0ti08oz6zdrdy");
+        cases.add("036z8puq5a7j0t_08p2cdz28v");
+        cases.add("036z8pu-5a7j0ti08p3ol8ool");
+        cases.add("036z8puq5a7j0ti08p4j 6cya");
+        cases.add("f5lxx1zz5pnorynqglhzmsp34");
+        cases.add("zzzzzzzzzzzzzzzzzzzzzzzzz");
+        cases.add("039o\tvvklfmqlqe7fzllz7c7t");
+        cases.add("039onvvklfmqlq漢字fgvd1");
+        cases.add("039onvvkl🤣qe7fzr2hdoqu");
+        cases.add("頭onvvklfmqlqe7fzrhtgcfz");
+        cases.add("039onvvklfmqlqe7fztft5尾");
+        cases.add("039漢字a52xp4bvf4sn94e09cja");
+        cases.add("039ooa52xp4bv😘sn97642mwl");
 
         for (String e : cases) {
             assertThrows(IllegalArgumentException.class, () -> {

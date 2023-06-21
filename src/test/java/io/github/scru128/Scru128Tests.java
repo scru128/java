@@ -24,7 +24,7 @@ class Scru128Tests {
     @Test
     @DisplayName("Generates 25-digit canonical string")
     void testFormat() {
-        Pattern pattern = Pattern.compile("^[0-9A-Z]{25}$");
+        Pattern pattern = Pattern.compile("^[0-9a-z]{25}$");
         for (String e : SAMPLES) {
             assertTrue(pattern.matcher(e).matches());
         }
