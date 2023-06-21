@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.3.2 - 2023-06-21
+
+### Changed
+
+- Error messages thrown by `Scru128Id` to improve error reporting
+
+### Maintenance
+
+- Updated gradlew and development dependencies
+
 ## v2.3.1 - 2023-04-07
 
 ### Maintenance
