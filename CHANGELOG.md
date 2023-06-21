@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.0.0 - unreleased
+
+### Removed
+
+- Deprecated items:
+  - `Scru128Generator#generateCore()`
+  - `Scru128Generator#getLastStatus()` and `Scru128Generator.Status`
+
 ## v2.3.2 - 2023-06-21
 
 ### Changed

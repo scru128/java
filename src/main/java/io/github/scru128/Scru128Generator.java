@@ -43,11 +43,6 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
     private long tsCounterHi = 0;
 
     /**
-     * The status code reported at the last generation.
-     */
-    private @NotNull Status lastStatus = Status.NOT_EXECUTED;
-
-    /**
      * The random number generator used by the generator.
      */
     private final @NotNull Random random;
@@ -114,23 +109,9 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
             this.timestamp = 0;
             tsCounterHi = 0;
             value = generateOrAbortCore(timestamp, rollbackAllowance);
-            lastStatus = Status.CLOCK_ROLLBACK;
             assert value != null;
         }
         return value;
-    }
-
-    /**
-     * A deprecated synonym for {@code generateOrResetCore(timestamp, 10_000)}.
-     *
-     * @param timestamp A 48-bit timestamp field value.
-     * @return A new SCRU128 ID object.
-     * @throws IllegalArgumentException if the timestamp is not a 48-bit positive integer.
-     * @deprecated Use {@code generateOrResetCore(timestamp, 10_000)} instead.
-     */
-    @Deprecated
-    public @NotNull Scru128Id generateCore(long timestamp) {
-        return generateOrResetCore(timestamp, DEFAULT_ROLLBACK_ALLOWANCE);
     }
 
     /**
@@ -158,21 +139,17 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
         if (timestamp > this.timestamp) {
             this.timestamp = timestamp;
             counterLo = random.nextInt() & Scru128.MAX_COUNTER_LO;
-            lastStatus = Status.NEW_TIMESTAMP;
         } else if (timestamp + rollbackAllowance > this.timestamp) {
             // go on with previous timestamp if new one is not much smaller
             counterLo++;
-            lastStatus = Status.COUNTER_LO_INC;
             if (counterLo > Scru128.MAX_COUNTER_LO) {
                 counterLo = 0;
                 counterHi++;
-                lastStatus = Status.COUNTER_HI_INC;
                 if (counterHi > Scru128.MAX_COUNTER_HI) {
                     counterHi = 0;
                     // increment timestamp at counter overflow
                     this.timestamp++;
                     counterLo = random.nextInt() & Scru128.MAX_COUNTER_LO;
-                    lastStatus = Status.TIMESTAMP_INC;
                 }
             }
         } else {
@@ -186,20 +163,6 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
         }
 
         return Scru128Id.fromFields(this.timestamp, counterHi, counterLo, 0xffff_ffffL & random.nextInt());
-    }
-
-    /**
-     * Returns a {@link Status} code that indicates the internal state involved in the last generation of ID.
-     * <p>
-     * Note that the generator object should be protected from concurrent accesses during the sequential calls to a
-     * generation method and this method to avoid race conditions.
-     *
-     * @return A status code from the last generation of ID.
-     * @deprecated Use {@link #generateOrAbort} to guarantee monotonicity.
-     */
-    @Deprecated
-    public @NotNull Status getLastStatus() {
-        return lastStatus;
     }
 
     /**
@@ -232,44 +195,5 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
     @Override
     public @NotNull Scru128Id next() {
         return generate();
-    }
-
-    /**
-     * The status code returned by {@link #getLastStatus} method.
-     *
-     * @deprecated Use {@link #generateOrAbort} to guarantee monotonicity.
-     */
-    @Deprecated
-    public enum Status {
-        /**
-         * Indicates that the generator has yet to generate an ID.
-         */
-        NOT_EXECUTED,
-
-        /**
-         * Indicates that the latest timestamp was used because it was greater than the previous one.
-         */
-        NEW_TIMESTAMP,
-
-        /**
-         * Indicates that counter_lo was incremented because the latest timestamp was no greater than the previous one.
-         */
-        COUNTER_LO_INC,
-
-        /**
-         * Indicates that counter_hi was incremented because counter_lo reached its maximum value.
-         */
-        COUNTER_HI_INC,
-
-        /**
-         * Indicates that the previous timestamp was incremented because counter_hi reached its maximum value.
-         */
-        TIMESTAMP_INC,
-
-        /**
-         * Indicates that the monotonic order of generated IDs was broken because the latest timestamp was less than
-         * the previous one by ten seconds or more.
-         */
-        CLOCK_ROLLBACK,
     }
 }
