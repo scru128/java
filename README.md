@@ -21,11 +21,11 @@ import io.github.scru128.Scru128
 
 // generate a new identifier object
 val x = Scru128.generate()
-println(x) // e.g. "036Z951MHJIKZIK2GSL81GR7L"
+println(x) // e.g., "036z951mhjikzik2gsl81gr7l"
 println(x.toByteArray()) // as a 128-bit unsigned integer in big-endian byte array
 
 // generate a textual representation directly
-println(Scru128.generateString()) // e.g. "036Z951MHZX67T63MQ9XE6Q0J"
+println(Scru128.generateString()) // e.g., "036z951mhzx67t63mq9xe6q0j"
 ```
 
 Java examples:
@@ -35,11 +35,11 @@ import io.github.scru128.*;
 
 // generate a new identifier object
 Scru128Id x = Scru128.generate();
-System.out.println(x); // e.g. "036Z951MHJIKZIK2GSL81GR7L"
+System.out.println(x); // e.g., "036z951mhjikzik2gsl81gr7l"
 System.out.println(x.toByteArray()); // as a 128-bit unsigned integer in big-endian byte array
 
 // generate a textual representation directly
-System.out.println(Scru128.generateString()); // e.g. "036Z951MHZX67T63MQ9XE6Q0J"
+System.out.println(Scru128.generateString()); // e.g., "036z951mhzx67t63mq9xe6q0j"
 ```
 
 See [SCRU128 Specification] for details.

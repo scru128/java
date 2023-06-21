@@ -207,7 +207,7 @@ public final class Scru128Id implements Comparable<@NotNull Scru128Id>, Serializ
     /**
      * Digit characters used in the Base36 notation.
      */
-    private static final @NotNull char[] DIGITS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+    private static final @NotNull char[] DIGITS = "0123456789abcdefghijklmnopqrstuvwxyz".toCharArray();
 
     /**
      * Returns the 25-digit canonical string representation.
