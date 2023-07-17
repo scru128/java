@@ -22,7 +22,7 @@ import java.util.Random;
  * </table>
  * <p>
  * All of these methods return monotonically increasing IDs unless a timestamp provided is significantly (by default,
- * ten seconds or more) smaller than the one embedded in the immediately preceding ID. If such a significant clock
+ * more than ten seconds) smaller than the one embedded in the immediately preceding ID. If such a significant clock
  * rollback is detected, the {@code generate} (OrReset) method resets the generator and returns a new ID based on the
  * given timestamp, while the {@code OrAbort} variants abort and return null. The {@code Core} functions offer
  * low-level thread-unsafe primitives.
@@ -139,7 +139,7 @@ public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<
         if (timestamp > this.timestamp) {
             this.timestamp = timestamp;
             counterLo = random.nextInt() & Scru128.MAX_COUNTER_LO;
-        } else if (timestamp + rollbackAllowance > this.timestamp) {
+        } else if (timestamp + rollbackAllowance >= this.timestamp) {
             // go on with previous timestamp if new one is not much smaller
             counterLo++;
             if (counterLo > Scru128.MAX_COUNTER_LO) {

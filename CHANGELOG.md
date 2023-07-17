@@ -16,6 +16,7 @@ a case-insensitive scheme. Other changes include the removal of deprecated APIs.
 ### Changed
 
 - Letter case of generated IDs from uppercase to lowercase
+- Edge case behavior of generator functions' rollback allowance handling
 
 ## v2.3.2 - 2023-06-21
 
