@@ -14,14 +14,14 @@ repositories {
 dependencies {
     // Use @NotNull and @Nullable annotations for Kotlin interoperability
     compileOnly("org.jetbrains:annotations:24.0.1")
-
-    // Use JUnit Jupiter for testing.
-    testImplementation("org.junit.jupiter:junit-jupiter:5.9.3")
 }
 
-tasks.test {
-    // Use JUnit Platform for unit tests.
-    useJUnitPlatform()
+testing {
+    suites {
+        named<JvmTestSuite>("test") {
+            useJUnitJupiter()
+        }
+    }
 }
 
 java {
