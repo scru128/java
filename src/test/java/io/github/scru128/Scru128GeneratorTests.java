@@ -16,7 +16,7 @@ class Scru128GeneratorGenerateOrResetTests {
         assertEquals(prev.getTimestamp(), ts);
 
         for (long i = 0; i < 100_000; i++) {
-            Scru128Id curr = g.generateOrResetCore(ts - Math.min(9_998, i), 10_000);
+            Scru128Id curr = g.generateOrResetCore(ts - Math.min(9_999, i), 10_000);
             assertTrue(prev.compareTo(curr) < 0);
             prev = curr;
         }
@@ -33,11 +33,15 @@ class Scru128GeneratorGenerateOrResetTests {
         assertEquals(prev.getTimestamp(), ts);
 
         Scru128Id curr = g.generateOrResetCore(ts - 10_000, 10_000);
-        assertTrue(prev.compareTo(curr) > 0);
-        assertEquals(curr.getTimestamp(), ts - 10_000);
+        assertTrue(prev.compareTo(curr) < 0);
 
         prev = curr;
         curr = g.generateOrResetCore(ts - 10_001, 10_000);
+        assertTrue(prev.compareTo(curr) > 0);
+        assertEquals(curr.getTimestamp(), ts - 10_001);
+
+        prev = curr;
+        curr = g.generateOrResetCore(ts - 10_002, 10_000);
         assertTrue(prev.compareTo(curr) < 0);
     }
 }
@@ -54,7 +58,7 @@ class Scru128GeneratorGenerateOrAbortTests {
         assertEquals(prev.getTimestamp(), ts);
 
         for (long i = 0; i < 100_000; i++) {
-            Scru128Id curr = g.generateOrAbortCore(ts - Math.min(9_998, i), 10000);
+            Scru128Id curr = g.generateOrAbortCore(ts - Math.min(9_999, i), 10000);
             assertNotNull(curr);
             assertTrue(prev.compareTo(curr) < 0);
             prev = curr;
@@ -73,9 +77,12 @@ class Scru128GeneratorGenerateOrAbortTests {
         assertEquals(prev.getTimestamp(), ts);
 
         Scru128Id curr = g.generateOrAbortCore(ts - 10_000, 10000);
-        assertNull(curr);
+        assertTrue(prev.compareTo(curr) < 0);
 
         curr = g.generateOrAbortCore(ts - 10_001, 10000);
+        assertNull(curr);
+
+        curr = g.generateOrAbortCore(ts - 10_002, 10000);
         assertNull(curr);
     }
 }
