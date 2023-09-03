@@ -11,7 +11,7 @@ import java.util.Random;
 /**
  * Represents a SCRU128 ID generator that encapsulates the monotonic counters and other internal states.
  * <p>
- * The generator offers four different methods to generate a SCRU128 ID:
+ * The generator comes with four different methods that generate a SCRU128 ID:
  * <table border="1">
  *   <caption>Comparison of generator functions</caption>
  *   <tr><th>Flavor</th>                      <th>Timestamp</th><th>Thread-</th><th>On big clock rewind</th></tr>
@@ -21,11 +21,16 @@ import java.util.Random;
  *   <tr><td>{@link #generateOrAbortCore}</td><td>Argument</td> <td>Unsafe</td> <td>Returns null</td></tr>
  * </table>
  * <p>
- * All of these methods return monotonically increasing IDs unless a timestamp provided is significantly (by default,
- * more than ten seconds) smaller than the one embedded in the immediately preceding ID. If such a significant clock
- * rollback is detected, the {@code generate} (OrReset) method resets the generator and returns a new ID based on the
- * given timestamp, while the {@code OrAbort} variants abort and return null. The {@code Core} functions offer
- * low-level thread-unsafe primitives.
+ * All of the four return a monotonically increasing ID by reusing the previous timestamp even if the one provided is
+ * smaller than the immediately preceding ID's. However, when such a clock rollback is considered significant (by
+ * default, more than ten seconds):
+ * <ol>
+ * <li>{@code generate} (OrReset) methods reset the generator and return a new ID based on the given timestamp, breaking
+ * the increasing order of IDs.</li>
+ * <li>{@code OrAbort} variants abort and return null immediately.</li>
+ * </ol>
+ * <p>
+ * The {@code Core} functions offer low-level thread-unsafe primitives to customize the behavior.
  */
 public class Scru128Generator implements Iterable<@NotNull Scru128Id>, Iterator<@NotNull Scru128Id> {
     /**
